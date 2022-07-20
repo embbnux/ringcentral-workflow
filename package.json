@@ -1,0 +1,51 @@
+{
+  "name": "ringcentral-workflow",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Embbnux Ji",
+  "private": true,
+  "scripts": {
+    "start": "node app/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init-db": "node scripts/init-db.js",
+    "webpack-server": "webpack serve --config webpack-dev-server.config.js",
+    "webpack-build": "NODE_ENV=production webpack build --config webpack-production.config.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "cookie-session": "^2.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "ejs": "^3.1.8",
+    "express": "^4.18.1",
+    "jsonwebtoken": "^8.5.1",
+    "morgan": "^1.10.0",
+    "node-fetch": "^2.6.7",
+    "sequelize": "^6.16.1",
+    "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
+    "@babel/plugin-proposal-decorators": "^7.3.0",
+    "@babel/plugin-proposal-export-default-from": "^7.2.0",
+    "@babel/plugin-proposal-function-bind": "^7.2.0",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.10.4",
+    "@babel/plugin-proposal-optional-chaining": "^7.3.4",
+    "@babel/plugin-transform-runtime": "^7.3.4",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-react": "^7.8.3",
+    "@ringcentral/juno": "^2.12.1",
+    "@ringcentral/juno-icon": "^1.6.1",
+    "babel-loader": "^8.1.0",
+    "moment": "^2.29.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "styled-components": "^5.2.0",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4",
+    "whatwg-fetch": "^2.0.3"
+  }
+}
