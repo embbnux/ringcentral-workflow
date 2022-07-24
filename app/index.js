@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 
 const authorizationRouter = require('./routers/authorize');
 const homeRouter = require('./routers/home');
+const userRouter = require('./routers/user');
 
 const port = process.env.PORT;
 
@@ -18,6 +19,8 @@ app.set('views', path.resolve(__dirname, 'views'));
 
 app.get('/oauth/authorize', authorizationRouter.authorize);
 app.get('/oauth/callback', authorizationRouter.authCallBack);
+
+app.get('/users/me', userRouter.userInfo);
 
 app.get('/', homeRouter.home);
 

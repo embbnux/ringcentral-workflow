@@ -17,7 +17,7 @@ const Title = styled(RcTypography)`
   margin-bottom: 30px;
 `;
 
-export function LoginPanel() {
+export function LoginPage() {
   return (
     <Container>
       <Title variant="subheading2">

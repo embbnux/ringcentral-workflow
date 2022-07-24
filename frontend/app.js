@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { HashRouter } from "react-router-dom";
 import { RcThemeProvider } from '@ringcentral/juno';
 
-import { Root } from './components/Root';
+const { Client } = require('./lib/client');
+import { Root } from './pages/Root';
 
 const theme = {
   palette: {
@@ -17,9 +19,13 @@ const theme = {
   }
 };
 
+const client = new Client();
+
 ReactDOM.render(
   <RcThemeProvider theme={theme}>
-    <Root />
+    <HashRouter>
+      <Root client={client} />
+    </HashRouter>
   </RcThemeProvider>,
   document.querySelector('div#viewport'),
 );
