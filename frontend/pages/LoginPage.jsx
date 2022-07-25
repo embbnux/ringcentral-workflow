@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-import { styled, palette2 } from '@ringcentral/juno/foundation';
+import { styled } from '@ringcentral/juno/foundation';
 import {
   RcButton,
   RcTypography,
@@ -21,14 +21,14 @@ export function LoginPage() {
   return (
     <Container>
       <Title variant="subheading2">
-        Login with RingCentral account
+        RingCentral Workflow Lab
       </Title>
       <RcButton
         onClick={() => {
           window.location.href = '/oauth/authorize';
         }}
       >
-        Login
+        Login with RingCentral account
       </RcButton>
     </Container>
   );

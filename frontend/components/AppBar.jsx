@@ -81,11 +81,11 @@ export function AppBar({
       >
         <LeftNavGroup item xs={8}>
           <Title variant="title1" color="header.text" noWrap>
-            Workflow
+            Workflow Lab
           </Title>
         </LeftNavGroup>
         <RcGrid item xs={4}>
-          <UserInfo username={username} />
+          <UserInfo username={username} onLogout={onLogout} />
         </RcGrid>
       </RcGrid>
     </StyledAppBar>

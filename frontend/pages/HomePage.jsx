@@ -7,6 +7,7 @@ import { Container, Content, MainContent } from '../components/Layout';
 export function HomePage({
   client,
   navigate,
+  location,
 }) {
   const [username , setUsername] = useState('');
 
@@ -31,7 +32,7 @@ export function HomePage({
         }}
       />
       <Content>
-        <Menu navigate={navigate}/>
+        <Menu navigate={navigate} location={location} />
         <MainContent>
           <h1>Home Page</h1>
         </MainContent>

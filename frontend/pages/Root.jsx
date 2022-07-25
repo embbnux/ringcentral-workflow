@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { styled, palette2 } from '@ringcentral/juno/foundation';
 
 import { LoginPage } from './LoginPage';
@@ -12,7 +12,8 @@ const Container = styled.div`
 `;
 
 export function Root({ client }) {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!client.token) {
@@ -35,6 +36,7 @@ export function Root({ client }) {
             <HomePage
               client={client}
               navigate={navigate}
+              location={location}
             />
           }
         />
