@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-
+import { Outlet } from "react-router-dom";
 import { AppBar } from '../components/AppBar';
 import { Menu } from '../components/Menu';
 import { Container, Content, MainContent } from '../components/Layout';
-import { FlowEditor } from '../components/FlowEditor';
 
-export function HomePage({
+export function App({
   client,
   navigate,
   location,
@@ -35,7 +34,7 @@ export function HomePage({
       <Content>
         <Menu navigate={navigate} location={location} />
         <MainContent>
-          <FlowEditor />
+          <Outlet />
         </MainContent>
       </Content>
     </Container>

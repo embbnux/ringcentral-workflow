@@ -60,14 +60,14 @@ export function Menu({
         role="tablist"
       >
         <MenuItem
-          onClick={() => navigate('/home')}
-          selected={location.pathname === '/home'}
+          onClick={() => navigate('/app/flows')}
+          selected={location.pathname === '/app/flows'}
         >
-          <RcListItemText primary="Home" />
+          <RcListItemText primary="Flows" />
         </MenuItem>
         <MenuItem
-          onClick={() => navigate('/home')}
-          selected={location.pathname === '/about'}
+          onClick={() => navigate('/app/about')}
+          selected={location.pathname === '/app/about'}
         >
           <RcListItemText primary="About" />
         </MenuItem>

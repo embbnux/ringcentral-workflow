@@ -3,7 +3,10 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { styled, palette2 } from '@ringcentral/juno/foundation';
 
 import { LoginPage } from './LoginPage';
-import { HomePage } from './HomePage';
+import { App } from './App';
+import { FlowsPage } from './FlowsPage';
+import { FlowEditorPage } from './FlowEditorPage';
+import { AboutPage } from './AboutPage';
 
 const Container = styled.div`
   height: 100%;
@@ -19,11 +22,11 @@ export function Root({ client }) {
     if (!client.token) {
       navigate('/');
     } else {
-      navigate('/home');
+      navigate('/app/flows');
     }
     client.on('unauthorized', () => {
       navigate('/');
-    })
+    });
   }, []);
 
   return (
@@ -31,15 +34,36 @@ export function Root({ client }) {
       <Routes>
         <Route index path="/" element={<LoginPage />} />
         <Route
-          path="/home"
+          path="/app"
           element={
-            <HomePage
+            <App
               client={client}
               navigate={navigate}
               location={location}
             />
           }
-        />
+        >
+          <Route
+            path="flows"
+            element={
+              <FlowsPage
+                navigate={navigate}
+              />
+            }
+          />
+          <Route
+            path="flows/:id"
+            element={
+              <FlowEditorPage />
+            }
+          />
+          <Route
+            path="about"
+            element={
+              <AboutPage />
+            }
+          />
+        </Route>
       </Routes>
     </Container>
   );
