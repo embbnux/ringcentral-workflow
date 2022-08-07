@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { AppBar } from '../components/AppBar';
 import { Menu } from '../components/Menu';
 import { Container, Content, MainContent } from '../components/Layout';
+import { FlowEditor } from '../components/FlowEditor';
 
 export function HomePage({
   client,
@@ -34,7 +35,7 @@ export function HomePage({
       <Content>
         <Menu navigate={navigate} location={location} />
         <MainContent>
-          <h1>Home Page</h1>
+          <FlowEditor />
         </MainContent>
       </Content>
     </Container>

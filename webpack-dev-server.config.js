@@ -10,7 +10,7 @@ const baseConfig = getBaseConfig();
 function getDevWebpackConfig(config) {
   config.devServer = {
     hot: true,
-    port: 8088,
+    port: 8089,
     static: buildPath,
   };
   config.output = {
