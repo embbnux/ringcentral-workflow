@@ -81,7 +81,7 @@ export function AppBar({
       >
         <LeftNavGroup item xs={8}>
           <Title variant="title1" color="header.text" noWrap>
-            Workflow Lab
+            RingCentral Workflow Lab
           </Title>
         </LeftNavGroup>
         <RcGrid item xs={4}>

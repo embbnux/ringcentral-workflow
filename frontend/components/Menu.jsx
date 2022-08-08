@@ -61,7 +61,7 @@ export function Menu({
       >
         <MenuItem
           onClick={() => navigate('/app/flows')}
-          selected={location.pathname === '/app/flows'}
+          selected={location.pathname.indexOf('/app/flows') > -1}
         >
           <RcListItemText primary="Flows" />
         </MenuItem>

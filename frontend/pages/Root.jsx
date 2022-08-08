@@ -54,7 +54,9 @@ export function Root({ client }) {
           <Route
             path="flows/:id"
             element={
-              <FlowEditorPage />
+              <FlowEditorPage
+                navigate={navigate}
+              />
             }
           />
           <Route

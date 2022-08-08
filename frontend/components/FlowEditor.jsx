@@ -1,14 +1,6 @@
 import React from 'react';
 import ReactFlow, { MiniMap, Controls, useNodesState } from 'react-flow-renderer';
-import { styled, palette2 } from '@ringcentral/juno/foundation';
 import { StartNode, ConditionNode, ActionNode } from './FlowNode';
-
-export const Container = styled.div`
-  width: 100%;
-  height: 100%;
-  padding-top: 30px;
-  background: ${palette2('neutral', 'b03')};
-`;
 
 const nodeTypes = {
   start: StartNode,
@@ -50,15 +42,13 @@ export function FlowEditor() {
   ];
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   return (
-    <Container>
-      <ReactFlow
-        nodes={nodes}
-        onNodesChange={onNodesChange}
-        edges={initialEdges}
-        nodeTypes={nodeTypes}
-      >
-        <Controls />
-      </ReactFlow>
-    </Container>
+    <ReactFlow
+      nodes={nodes}
+      onNodesChange={onNodesChange}
+      edges={initialEdges}
+      nodeTypes={nodeTypes}
+    >
+      <Controls />
+    </ReactFlow>
   );
 }
