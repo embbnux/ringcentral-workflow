@@ -1,27 +1,48 @@
 import React, { memo } from 'react';
-import { RcText } from '@ringcentral/juno';
+import {
+  RcTypography,
+  RcIconButton,
+} from '@ringcentral/juno';
 import {
   styled,
   palette2,
   useTheme,
   shadows,
 } from '@ringcentral/juno/foundation';
-
+import { Edit } from '@ringcentral/juno-icon';
 import { Handle } from 'react-flow-renderer';
+
+const IconButton = styled(RcIconButton)`
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -16px;
+  display: none;
+`;
 
 const StartNodeWrapper = styled.div`
   min-width: 150px;
+  max-width: 300px;
   border-radius: 50px;
   background: ${palette2('label', 'blue01')};
   border: 1px solid ${palette2('label', 'blue01')};
   text-align: center;
-  padding: 0 20px;
+  padding: 0 30px;
   box-shadow: ${shadows('8')};
+  position: relative;
+
+  &:hover {
+    .RcIconButton-root {
+      display: block;
+    }
+  }
 `;
 
-const StyledText = styled(RcText)`
+const StyledText = styled(RcTypography)`
   height: 40px;
   line-height: 40px;
+  flex: 1;
+  text-align: center;
 `;
 
 export const StartNode = (({ data, isConnectable }) => {
@@ -33,6 +54,14 @@ export const StartNode = (({ data, isConnectable }) => {
         <StyledText color="neutral.b01">
           {data.label}
         </StyledText>
+        <IconButton
+          symbol={Edit}
+          color="neutral.b01"
+          size="small"
+          onClick={() => {
+            data.onEdit && data.onEdit(data.id, 'start');
+          }}
+        />
       </StartNodeWrapper>
       <Handle
         type="source"
@@ -53,6 +82,13 @@ const ConditionNodeWrapper = styled.div`
   text-align: center;
   padding: 0 20px;
   box-shadow: ${shadows('8')};
+  position: relative;
+
+  &:hover {
+    .RcIconButton-root {
+      display: block;
+    }
+  }
 `;
 
 export const ConditionNode = (({ data, isConnectable }) => {
@@ -64,6 +100,14 @@ export const ConditionNode = (({ data, isConnectable }) => {
         <StyledText color="neutral.f06">
           {data.label}
         </StyledText>
+        <IconButton
+          symbol={Edit}
+          color="neutral.f06"
+          size="small"
+          onClick={() => {
+            data.onEdit && data.onEdit(data.id, 'condition');
+          }}
+        />
       </ConditionNodeWrapper>
       <Handle
         type="target"
@@ -96,6 +140,14 @@ export const ActionNode = (({ data, isConnectable }) => {
         <StyledText color="neutral.f06">
           {data.label}
         </StyledText>
+        <IconButton
+          symbol={Edit}
+          color="neutral.f06"
+          size="small"
+          onClick={() => {
+            data.onEdit && data.onEdit(data.id, 'action');
+          }}
+        />
       </ActionNodeWrapper>
       <Handle
         type="target"

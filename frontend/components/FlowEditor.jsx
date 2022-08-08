@@ -13,7 +13,12 @@ export function FlowEditor() {
     {
       id: '1',
       type: 'start',
-      data: { label: 'New SMS' },
+      data: {
+        label: 'New SMS',
+        onEdit: () => {
+          console.log('edit');
+        },
+      },
       position: { x: 250, y: 25 },
     },
     {
