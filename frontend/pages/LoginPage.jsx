@@ -10,17 +10,17 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
+  margin-top: 20%;
 `;
 
 const Title = styled(RcTypography)`
-  margin-bottom: 30px;
+  margin-bottom: 50px;
 `;
 
 export function LoginPage() {
   return (
     <Container>
-      <Title variant="subheading2">
+      <Title variant="headline2">
         RingCentral Workflow Lab
       </Title>
       <RcButton

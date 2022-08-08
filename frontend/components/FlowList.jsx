@@ -24,7 +24,6 @@ export function FlowList({
         flows.map(flow => (
           <Item
             key={flow.id}
-            onClick={() => navigate(`/app/flows/${flow.id}`)}
             divider
           >
             <RcListItemText primary={flow.name} />
@@ -32,6 +31,7 @@ export function FlowList({
               <RcIconButton
                 symbol={Edit}
                 size="small"
+                onClick={() => navigate(`/app/flows/${flow.id}`)}
               />
             </RcListItemSecondaryAction>
           </Item>
