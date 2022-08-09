@@ -36,7 +36,6 @@ export function FlowsPage({
         <RcButton
           startIcon={<RcIcon symbol={Add} />}
           variant="outlined"
-          color="label.blue01"
           onClick={() => {
             navigate('/app/flows/new');
           }}

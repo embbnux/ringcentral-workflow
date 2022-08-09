@@ -7,6 +7,32 @@ export class Client extends EventEmitter {
     return userInfo;
   }
 
+  async getFlows() {
+    const flows = await this._request('/flows');
+    return flows;
+  }
+
+  async getFlow(id) {
+    const flows = await this._request(`/flows/${id}`);
+    return flows;
+  }
+
+  async createFlow(name, nodes) {
+    const flow = await this._request('/flows', 'POST', {
+      name,
+      nodes,
+    });
+    return flow;
+  }
+
+  async updateFlow(id, name, nodes) {
+    const flow = await this._request(`/flows/${id}`, 'PUT', {
+      name,
+      nodes,
+    });
+    return flow;
+  }
+
   async _request(path, method = 'GET', body = null) {
     const response = await fetch(path, {
       method,

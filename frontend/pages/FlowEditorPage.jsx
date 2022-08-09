@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useParams } from "react-router-dom";
 import {
   RcAppBar,
   RcTypography,
@@ -8,9 +9,10 @@ import {
   RcMenu,
   RcMenuItem,
   RcListItemText,
+  RcTextField,
 } from '@ringcentral/juno';
 import { styled, palette2 } from '@ringcentral/juno/foundation';
-import { ChevronLeft, Add } from '@ringcentral/juno-icon';
+import { ChevronLeft, Add, Edit } from '@ringcentral/juno-icon';
 import { FlowEditor } from '../components/FlowEditor';
 
 const Container = styled.div`
@@ -20,9 +22,15 @@ const Container = styled.div`
 `;
 
 const Title = styled(RcTypography)`
-  margin-right: 10px;
   line-height: 56px;
+`;
+
+const TitleField = styled.div`
+  margin-right: 10px;
   flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 `;
 
 const Header = styled(RcAppBar)`
@@ -45,10 +53,38 @@ const Button = styled(RcButton)`
 
 export function FlowEditorPage({
   navigate,
+  client,
+  alertMessage,
 }) {
   const addButtonRef = useRef(null);
   const [addButtonMenuOpen, setAddButtonMenuOpen] = useState(false);
-
+  const { id: flowId } = useParams();
+  const [flowName, setFlowName] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [flowNodes, setFlowNodes] = useState([]);
+  useEffect(() => {
+    if (!flowId) {
+      return;
+    }
+    if (flowId === 'new') {
+      setFlowName('Untitled Flow');
+      return;
+    }
+    const fetchFlow = async () => {
+      try {
+        const flow = await client.getFlow(flowId);
+        setFlowName(flow.name);
+        setFlowNodes(flow.nodes);
+      } catch (e) {
+        console.error(e);
+        alertMessage({
+          message: 'Failed to load flow',
+          type: 'error',
+        });
+      }
+    };
+    fetchFlow();
+  }, [flowId])
   return (
     <Container>
       <Header color="transparent" variant='outlined'>
@@ -58,13 +94,43 @@ export function FlowEditorPage({
             navigate('/app/flows');
           }}
         />
-        <Title variant="subheading1" noWrap>
-          Flow Editor
-        </Title>
+        <TitleField>
+          {
+            isEditingName ? (
+              <RcTextField
+                value={flowName}
+                onChange={(e) => {
+                  setFlowName(e.target.value);
+                }}
+                onBlur={() => {
+                  if (!flowName) {
+                    setFlowName('Untitled Flow');
+                  }
+                  setIsEditingName(false);
+                }}
+                clearBtn={false}
+              />
+            ) : (
+              <Title variant="subheading1" noWrap>
+                {flowName}
+              </Title>
+            )
+          }
+          {
+            !isEditingName && (
+              <RcIconButton
+                symbol={Edit}
+                size="small"
+                onClick={() => {
+                  setIsEditingName(true);
+                }}
+              />
+            )
+          }
+        </TitleField>
         <Button
           startIcon={<RcIcon symbol={Add} />}
           variant="outlined"
-          color="label.blue01"
           innerRef={addButtonRef}
           onClick={() => {
             setAddButtonMenuOpen(true);
@@ -93,12 +159,14 @@ export function FlowEditorPage({
             <RcListItemText primary="Add action" />
           </RcMenuItem>
         </RcMenu>
-        <Button color="label.blue01">
+        <Button>
           Save
         </Button>
       </Header>
       <EditorContainer>
-        <FlowEditor />
+        <FlowEditor
+          nodes={flowNodes}
+        />
       </EditorContainer>
     </Container>
   );

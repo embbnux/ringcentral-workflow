@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { styled, palette2 } from '@ringcentral/juno/foundation';
+import { RcSnackbar, RcSnackbarAction } from '@ringcentral/juno';
+import { Close } from '@ringcentral/juno-icon';
 
 import { LoginPage } from './LoginPage';
 import { App } from './App';
@@ -17,6 +19,7 @@ const Container = styled.div`
 export function Root({ client }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [message, setMessage] = useState({});
 
   useEffect(() => {
     if (!client.token) {
@@ -56,6 +59,8 @@ export function Root({ client }) {
             element={
               <FlowEditorPage
                 navigate={navigate}
+                client={client}
+                alertMessage={setMessage}
               />
             }
           />
@@ -67,6 +72,34 @@ export function Root({ client }) {
           />
         </Route>
       </Routes>
+      <RcSnackbar
+        action={
+          <RcSnackbarAction
+            aria-label="close"
+            onClick={() => {
+              setMessage({
+                ...message,
+                message: null,
+              });
+            }}
+            symbol={Close}
+            variant="icon"
+          />
+        }
+        autoHideDuration={10000}
+        message={message.message}
+        open={!!message.message}
+        type={message.type}
+        onClose={(_, reason) => {
+          if (reason === 'clickaway') {
+            return;
+          }
+          setMessage({
+            ...message,
+            message: null,
+          });
+        }}
+      />
     </Container>
   );
 }
