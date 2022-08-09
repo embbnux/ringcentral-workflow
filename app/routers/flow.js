@@ -11,14 +11,11 @@ async function getFlows(req, res) {
       limit: 20,
     });
     res.status(200);
-    res.json({
-      result: 'success',
-      flows: flows.map((flow) => ({
-        id: flow.id,
-        name: flow.name,
-        enabled: flow.enabled,
-      })),
-    });
+    res.json(flows.map((flow) => ({
+      id: flow.id,
+      name: flow.name,
+      enabled: flow.enabled,
+    })));
   } catch (e) {
     console.log(e);
     res.status(500);
@@ -83,7 +80,8 @@ async function updateFlow(req, res) {
     await flow.save();
     res.status(200);
     res.json({
-      result: 'success',
+      id: flow.id,
+      name: flow.name,
     });
   } catch (e) {
     console.log(e);

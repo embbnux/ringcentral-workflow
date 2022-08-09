@@ -25,7 +25,7 @@ app.get('/oauth/callback', authorizationRouter.authCallBack);
 
 app.get('/users/me', checkAuth, userRouter.userInfo);
 
-app.post('/flows/:id', checkAuth, flowRouter.updateFlow);
+app.put('/flows/:id', checkAuth, flowRouter.updateFlow);
 app.get('/flows/:id', checkAuth, flowRouter.getFlow);
 app.get('/flows', checkAuth, flowRouter.getFlows);
 app.post('/flows', checkAuth, flowRouter.createFlow);
