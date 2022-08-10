@@ -11,6 +11,7 @@ const authorizationRouter = require('./routers/authorize');
 const homeRouter = require('./routers/home');
 const userRouter = require('./routers/user');
 const flowRouter = require('./routers/flow');
+const flowEditorRouter = require('./routers/flowEditor');
 
 const port = process.env.PORT;
 
@@ -29,6 +30,10 @@ app.put('/flows/:id', checkAuth, flowRouter.updateFlow);
 app.get('/flows/:id', checkAuth, flowRouter.getFlow);
 app.get('/flows', checkAuth, flowRouter.getFlows);
 app.post('/flows', checkAuth, flowRouter.createFlow);
+
+app.get('/flow-editor/triggers', checkAuth, flowEditorRouter.getTriggers);
+app.get('/flow-editor/conditions', checkAuth, flowEditorRouter.getConditions);
+app.get('/flow-editor/actions', checkAuth, flowEditorRouter.getActions);
 
 app.get('/', homeRouter.home);
 

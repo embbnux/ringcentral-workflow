@@ -1,5 +1,4 @@
 const { nanoid } = require('nanoid');
-const { getUserFromToken } = require('../lib/getUserFromToken');
 const { Flow } = require('../models/Flow');
 
 async function getFlows(req, res) {
