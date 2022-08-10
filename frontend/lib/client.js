@@ -33,6 +33,21 @@ export class Client extends EventEmitter {
     return flow;
   }
 
+  async getTriggers() {
+    const triggers = await this._request('/flow-editor/triggers');
+    return triggers;
+  }
+
+  async getConditions() {
+    const conditions = await this._request('/flow-editor/conditions');
+    return conditions;
+  }
+
+  async getActions() {
+    const actions = await this._request('/flow-editor/actions');
+    return actions;
+  }
+
   async _request(path, method = 'GET', body = null) {
     const response = await fetch(path, {
       method,

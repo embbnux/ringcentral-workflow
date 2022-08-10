@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { useRef } from 'react';
 import {
   RcTypography,
   RcIconButton,
@@ -20,7 +20,7 @@ const IconButton = styled(RcIconButton)`
   display: none;
 `;
 
-const StartNodeWrapper = styled.div`
+const TriggerNodeWrapper = styled.div`
   min-width: 150px;
   max-width: 300px;
   border-radius: 50px;
@@ -45,12 +45,13 @@ const StyledText = styled(RcTypography)`
   text-align: center;
 `;
 
-export const StartNode = (({ data, isConnectable }) => {
+export const TriggerNode = (({ data, isConnectable }) => {
   const theme = useTheme();
+  const buttonRef = useRef(null);
 
   return (
     <>
-      <StartNodeWrapper>
+      <TriggerNodeWrapper>
         <StyledText color="neutral.b01">
           {data.label}
         </StyledText>
@@ -59,10 +60,19 @@ export const StartNode = (({ data, isConnectable }) => {
           color="neutral.b01"
           size="small"
           onClick={() => {
-            data.onEdit && data.onEdit(data.id, 'start');
+            if (!buttonRef.current) {
+              return;
+            }
+            const doubleClickEvent = new MouseEvent('dblclick', {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+            });
+            buttonRef.current.dispatchEvent(doubleClickEvent);
           }}
+          innerRef={buttonRef}
         />
-      </StartNodeWrapper>
+      </TriggerNodeWrapper>
       <Handle
         type="source"
         position="bottom"
@@ -93,6 +103,7 @@ const ConditionNodeWrapper = styled.div`
 
 export const ConditionNode = (({ data, isConnectable }) => {
   const theme = useTheme();
+  const buttonRef = useRef(null);
 
   return (
     <>
@@ -105,8 +116,17 @@ export const ConditionNode = (({ data, isConnectable }) => {
           color="neutral.f06"
           size="small"
           onClick={() => {
-            data.onEdit && data.onEdit(data.id, 'condition');
+            if (!buttonRef.current) {
+              return;
+            }
+            const doubleClickEvent = new MouseEvent('dblclick', {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+            });
+            buttonRef.current.dispatchEvent(doubleClickEvent);
           }}
+          innerRef={buttonRef}
         />
       </ConditionNodeWrapper>
       <Handle
@@ -133,6 +153,7 @@ const ActionNodeWrapper = styled(ConditionNodeWrapper)`
 
 export const ActionNode = (({ data, isConnectable }) => {
   const theme = useTheme();
+  const buttonRef = useRef(null);
 
   return (
     <>
@@ -145,8 +166,17 @@ export const ActionNode = (({ data, isConnectable }) => {
           color="neutral.f06"
           size="small"
           onClick={() => {
-            data.onEdit && data.onEdit(data.id, 'action');
+            if (!buttonRef.current) {
+              return;
+            }
+            const doubleClickEvent = new MouseEvent('dblclick', {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+            });
+            buttonRef.current.dispatchEvent(doubleClickEvent);
           }}
+          innerRef={buttonRef}
         />
       </ActionNodeWrapper>
       <Handle

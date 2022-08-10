@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from "react-router-dom";
 import {
   RcAppBar,
@@ -14,6 +14,7 @@ import {
 import { styled, palette2 } from '@ringcentral/juno/foundation';
 import { ChevronLeft, Add, Edit } from '@ringcentral/juno-icon';
 import { FlowEditor } from '../components/FlowEditor';
+import { TriggerDialog } from '../components/TriggerDialog';
 
 const Container = styled.div`
   width: 100%;
@@ -62,6 +63,12 @@ export function FlowEditorPage({
   const [flowName, setFlowName] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
   const [flowNodes, setFlowNodes] = useState([]);
+  const [triggerDialogOpen, setTriggerDialogOpen] = useState(false);
+  const [triggers, setTriggers] = useState([]);
+  const [editingTriggerNodeId, setEditingTriggerNodeId] = useState(null);
+  const [editingConditionNodeId, setEditingConditionNodeId] = useState(null);
+  const [editingActionNodeId, setEditingActionNodeId] = useState(null);
+
   useEffect(() => {
     if (!flowId) {
       return;
@@ -85,6 +92,30 @@ export function FlowEditorPage({
     };
     fetchFlow();
   }, [flowId])
+
+  useEffect(() => {
+    if (!triggerDialogOpen) {
+      return;
+    }
+    const fetchTriggers = async () => {
+      try {
+        const triggers = await client.getTriggers(flowId);
+        setTriggers(triggers);
+      } catch (e) {
+        console.error(e);
+        alertMessage({
+          message: 'Failed to load triggers',
+          type: 'error',
+        });
+      }
+    };
+    fetchTriggers();
+  }, [triggerDialogOpen]);
+
+  const editingTriggerNode = editingTriggerNodeId ?
+    flowNodes.find(node => node.id === editingTriggerNodeId) :
+    null;
+
   return (
     <Container>
       <Header color="transparent" variant='outlined'>
@@ -149,13 +180,19 @@ export function FlowEditorPage({
           }}
           open={addButtonMenuOpen}
         >
-          <RcMenuItem>
+          <RcMenuItem
+            onClick={() => {
+              setEditingTriggerNodeId(null);
+              setTriggerDialogOpen(true);
+            }}
+            disabled={flowNodes.length > 0}
+          >
             <RcListItemText primary="Add trigger" />
           </RcMenuItem>
-          <RcMenuItem>
+          <RcMenuItem disabled={flowNodes.length === 0}>
             <RcListItemText primary="Add condition" />
           </RcMenuItem>
-          <RcMenuItem>
+          <RcMenuItem disabled={flowNodes.length === 0}>
             <RcListItemText primary="Add action" />
           </RcMenuItem>
         </RcMenu>
@@ -166,8 +203,62 @@ export function FlowEditorPage({
       <EditorContainer>
         <FlowEditor
           nodes={flowNodes}
-        />
+          onNodesChange={(nodeChanges) => {
+            console.log(nodeChanges);
+          }}
+          onNodeDoubleClick={(e, node) => {
+            if (node.type === 'trigger') {
+              setEditingTriggerNodeId(node.id);
+              setTriggerDialogOpen(true);
+            } else if (node.type === 'condition') {
+              setEditingConditionNodeId(node.id);
+            } else if (node.type === 'action') {
+              setEditingActionNodeId(node.id);
+            }
+          }}
+        /> 
       </EditorContainer>
+      <TriggerDialog
+        open={triggerDialogOpen}
+        onClose={() => {
+          setTriggerDialogOpen(false);
+        }}
+        triggers={triggers}
+        editingTriggerNode={editingTriggerNode}
+        onSave={(type) => {
+          const trigger = triggers.find(trigger => trigger.id === type);
+          if (!editingTriggerNode) {
+            const newTriggerNode = {
+              id: String(Date.now()),
+              type: 'trigger',
+              data: {
+                label: trigger.name,
+                nextNodes: [],
+                type,
+              },
+              position: { x: 250, y: 25 },
+            };
+            setFlowNodes([newTriggerNode]);
+            setTriggerDialogOpen(false);
+            return;
+          }
+          const newNodes = flowNodes.map((node) => {
+            if (node.id !== editingTriggerNodeId) {
+              return node;
+            }
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                label: trigger.name,
+                type,
+              },
+            };
+          });
+          setFlowNodes(newNodes);
+          setTriggerDialogOpen(false);
+        }}
+      />
     </Container>
   );
 }

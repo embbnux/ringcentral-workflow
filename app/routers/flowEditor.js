@@ -4,7 +4,7 @@ const { ACTIONS } = require('../flow/actions');
 
 function getTriggers(req, res) {
   res.status(200);
-  res.json(TRIGGERS.map(() => ({
+  res.json(TRIGGERS.map((trigger) => ({
     id: trigger.id,
     name: trigger.name,
     type: trigger.type,
