@@ -69,6 +69,8 @@ function getEdgesFromNodes(nodes) {
 export function FlowEditor({
   nodes,
   onNodesChange,
+  onEditNode,
+  onDragNode,
 }) {
   const edges = getEdgesFromNodes(nodes);
   
@@ -78,6 +80,8 @@ export function FlowEditor({
       onNodesChange={onNodesChange}
       edges={edges}
       nodeTypes={nodeTypes}
+      onNodeDoubleClick={onEditNode}
+      onNodeDrag={onDragNode}
     >
       <Controls />
     </ReactFlow>

@@ -116,6 +116,40 @@ export function FlowEditorPage({
     flowNodes.find(node => node.id === editingTriggerNodeId) :
     null;
 
+  const onEditNode = useCallback((e, node) => {
+    if (
+      (
+        node.type === 'trigger' ||
+        node.type === 'action'
+      ) &&
+      node.data.nextNodes && node.data.nextNodes.length > 0
+    ) {
+      alertMessage({
+        message: 'Cannot edit a node with following nodes.',
+        type: 'warning',
+      });
+      return;
+    }
+    if (node.type === 'trigger') {
+      setEditingTriggerNodeId(node.id);
+      setTriggerDialogOpen(true);
+    } else if (node.type === 'condition') {
+      setEditingConditionNodeId(node.id);
+    } else if (node.type === 'action') {
+      setEditingActionNodeId(node.id);
+    }
+  }, []);
+
+  const onDragNode = useCallback((e, draggedNode) => {
+    const newNodes = flowNodes.map((node) => {
+      if (node.id !== draggedNode.id) {
+        return node;
+      }
+      return draggedNode;
+    });
+    setFlowNodes(newNodes);
+  }, [flowNodes]);
+
   return (
     <Container>
       <Header color="transparent" variant='outlined'>
@@ -184,6 +218,7 @@ export function FlowEditorPage({
             onClick={() => {
               setEditingTriggerNodeId(null);
               setTriggerDialogOpen(true);
+              setAddButtonMenuOpen(false);
             }}
             disabled={flowNodes.length > 0}
           >
@@ -203,19 +238,8 @@ export function FlowEditorPage({
       <EditorContainer>
         <FlowEditor
           nodes={flowNodes}
-          onNodesChange={(nodeChanges) => {
-            console.log(nodeChanges);
-          }}
-          onNodeDoubleClick={(e, node) => {
-            if (node.type === 'trigger') {
-              setEditingTriggerNodeId(node.id);
-              setTriggerDialogOpen(true);
-            } else if (node.type === 'condition') {
-              setEditingConditionNodeId(node.id);
-            } else if (node.type === 'action') {
-              setEditingActionNodeId(node.id);
-            }
-          }}
+          onEditNode={onEditNode}
+          onDragNode={onDragNode}
         /> 
       </EditorContainer>
       <TriggerDialog
