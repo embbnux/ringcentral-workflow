@@ -49,7 +49,6 @@ export function Menu({
   navigate,
   location,
 }) {
-  console.log('location', location);
   return (
     <StyledDrawer
       variant="permanent"

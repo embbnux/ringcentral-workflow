@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from "react-router-dom";
+import { RcLoading } from '@ringcentral/juno';
 import { AppBar } from '../components/AppBar';
 import { Menu } from '../components/Menu';
 import { Container, Content, MainContent } from '../components/Layout';
@@ -8,6 +9,7 @@ export function App({
   client,
   navigate,
   location,
+  loading,
 }) {
   const [username , setUsername] = useState('');
 
@@ -34,7 +36,9 @@ export function App({
       <Content>
         <Menu navigate={navigate} location={location} />
         <MainContent>
-          <Outlet />
+          <RcLoading loading={loading}>
+            <Outlet />
+          </RcLoading>
         </MainContent>
       </Content>
     </Container>

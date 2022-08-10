@@ -20,6 +20,7 @@ export function Root({ client }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [message, setMessage] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!client.token) {
@@ -43,6 +44,7 @@ export function Root({ client }) {
               client={client}
               navigate={navigate}
               location={location}
+              loading={loading}
             />
           }
         >
@@ -61,6 +63,8 @@ export function Root({ client }) {
                 navigate={navigate}
                 client={client}
                 alertMessage={setMessage}
+                setLoading={setLoading}
+                loading={loading}
               />
             }
           />

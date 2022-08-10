@@ -15,6 +15,7 @@ import { styled, palette2 } from '@ringcentral/juno/foundation';
 import { ChevronLeft, Add, Edit } from '@ringcentral/juno-icon';
 import { FlowEditor } from '../components/FlowEditor';
 import { TriggerDialog } from '../components/TriggerDialog';
+import { ConditionDialog } from '../components/ConditionDialog';
 
 const Container = styled.div`
   width: 100%;
@@ -52,10 +53,27 @@ const Button = styled(RcButton)`
   margin-left: 20px;
 `;
 
+function getNewNodesWithUpdatedNode(oldNodes, updateNodeId, updateNodeData) {
+  return oldNodes.map((node) => {
+    if (node.id !== updateNodeId) {
+      return node;
+    }
+    return {
+      ...node,
+      data: {
+        ...node.data,
+        ...updateNodeData,
+      },
+    };
+  })
+}
+
 export function FlowEditorPage({
   navigate,
   client,
   alertMessage,
+  setLoading,
+  loading,
 }) {
   const addButtonRef = useRef(null);
   const [addButtonMenuOpen, setAddButtonMenuOpen] = useState(false);
@@ -68,52 +86,46 @@ export function FlowEditorPage({
   const [editingTriggerNodeId, setEditingTriggerNodeId] = useState(null);
   const [editingConditionNodeId, setEditingConditionNodeId] = useState(null);
   const [editingActionNodeId, setEditingActionNodeId] = useState(null);
+  const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
+  const [conditions, setConditions] = useState([]);
 
   useEffect(() => {
     if (!flowId) {
       return;
     }
-    if (flowId === 'new') {
-      setFlowName('Untitled Flow');
-      return;
-    }
-    const fetchFlow = async () => {
+    const initFlow = async () => {
       try {
-        const flow = await client.getFlow(flowId);
-        setFlowName(flow.name);
-        setFlowNodes(flow.nodes);
+        setLoading(true);
+        const newTriggers = await client.getTriggers();
+        setTriggers(newTriggers);
+        const newConditions = await client.getConditions(flowId);
+        setConditions(newConditions);
+        if (flowId === 'new') {
+          setFlowName('Untitled Flow');
+          setTriggerDialogOpen(true);
+        } else {
+          const flow = await client.getFlow(flowId);
+          setFlowName(flow.name);
+          setFlowNodes(flow.nodes);
+        }
+        setLoading(false);
       } catch (e) {
         console.error(e);
+        setLoading(false);
         alertMessage({
-          message: 'Failed to load flow',
+          message: 'Failed to init flow editor',
           type: 'error',
         });
       }
     };
-    fetchFlow();
-  }, [flowId])
-
-  useEffect(() => {
-    if (!triggerDialogOpen) {
-      return;
-    }
-    const fetchTriggers = async () => {
-      try {
-        const triggers = await client.getTriggers(flowId);
-        setTriggers(triggers);
-      } catch (e) {
-        console.error(e);
-        alertMessage({
-          message: 'Failed to load triggers',
-          type: 'error',
-        });
-      }
-    };
-    fetchTriggers();
-  }, [triggerDialogOpen]);
+    initFlow();
+  }, [flowId]);
 
   const editingTriggerNode = editingTriggerNodeId ?
     flowNodes.find(node => node.id === editingTriggerNodeId) :
+    null;
+  const editingConditionNode = editingConditionNodeId ?
+    flowNodes.find(node => node.id === editingConditionNodeId) :
     null;
 
   const onEditNode = useCallback((e, node) => {
@@ -126,7 +138,7 @@ export function FlowEditorPage({
     ) {
       alertMessage({
         message: 'Cannot edit a node with following nodes.',
-        type: 'warning',
+        type: 'warn',
       });
       return;
     }
@@ -135,6 +147,7 @@ export function FlowEditorPage({
       setTriggerDialogOpen(true);
     } else if (node.type === 'condition') {
       setEditingConditionNodeId(node.id);
+      setConditionDialogOpen(true);
     } else if (node.type === 'action') {
       setEditingActionNodeId(node.id);
     }
@@ -224,7 +237,14 @@ export function FlowEditorPage({
           >
             <RcListItemText primary="Add trigger" />
           </RcMenuItem>
-          <RcMenuItem disabled={flowNodes.length === 0}>
+          <RcMenuItem
+            disabled={flowNodes.length === 0}
+            onClick={() => {
+              setEditingConditionNodeId(null);
+              setConditionDialogOpen(true);
+              setAddButtonMenuOpen(false);
+            }}
+          >
             <RcListItemText primary="Add condition" />
           </RcMenuItem>
           <RcMenuItem disabled={flowNodes.length === 0}>
@@ -266,21 +286,64 @@ export function FlowEditorPage({
             setTriggerDialogOpen(false);
             return;
           }
-          const newNodes = flowNodes.map((node) => {
-            if (node.id !== editingTriggerNodeId) {
-              return node;
-            }
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                label: trigger.name,
-                type,
-              },
-            };
-          });
+          const newNodes = getNewNodesWithUpdatedNode(
+            flowNodes,
+            editingTriggerNodeId,
+            {
+              label: trigger.name,
+              type,
+            },
+          );
           setFlowNodes(newNodes);
           setTriggerDialogOpen(false);
+        }}
+      />
+      <ConditionDialog
+        open={conditionDialogOpen}
+        onClose={() => {
+          setConditionDialogOpen(false);
+        }}
+        conditions={conditions}
+        editingConditionNodeId={editingConditionNodeId}
+        allNodes={flowNodes}
+        getPreviousOutputs={(nodeId) => {}}
+        onSave={({
+          parentNodeId,
+          label,
+        }) => {
+          if (!editingConditionNode) {
+            const parentNode = flowNodes.find(node => node.id === parentNodeId);
+            const newConditionNode = {
+              id: String(Date.now()),
+              type: 'condition',
+              data: {
+                label,
+                parentNodeId,
+                nextNodes: [],
+              },
+              position: { x: parentNode.position.x, y: parentNode.position.y + 120 },
+            };
+            parentNode.data.nextNodes.push(newConditionNode.id);
+            const oldNodes = getNewNodesWithUpdatedNode(
+              flowNodes,
+              parentNode.id,
+              {
+                nextNodes: [...parentNode.data.nextNodes, newConditionNode.id],
+              },
+            );
+            setFlowNodes([...oldNodes, newConditionNode]);
+            setConditionDialogOpen(false);
+            return;
+          }
+          const newNodes = getNewNodesWithUpdatedNode(
+            flowNodes,
+            editingConditionNodeId,
+            {
+              label,
+            }
+          );
+          setFlowNodes(newNodes);
+          setConditionDialogOpen(false);
         }}
       />
     </Container>

@@ -50,18 +50,17 @@ function getEdgesFromNodes(nodes) {
   let edgeId = 0;
   const edges = [];
   nodes.forEach((node) => {
-    if (node.data.nextNodes && node.data.nextNodes.length > 0) {
-      node.data.nextNodes.forEach((nextNodeId) => {
-        edges.push({
-          id: `e${edgeId}`,
-          source: node.id,
-          target: nextNodeId,
-          animated: true,
-          type: 'step',
-        });
-        edgeId += 1;
-      });
+    if (!node.data.parentNodeId) {
+      return;
     }
+    edges.push({
+      id: `e${edgeId}`,
+      source: node.data.parentNodeId,
+      target: node.id,
+      animated: true,
+      type: 'step',
+    });
+    edgeId += 1;
   });
   return edges;
 }
