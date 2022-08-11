@@ -88,6 +88,7 @@ export function FlowEditorPage({
   const [editingActionNodeId, setEditingActionNodeId] = useState(null);
   const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
   const [conditions, setConditions] = useState([]);
+  const [actions, setActions] = useState([]);
 
   useEffect(() => {
     if (!flowId) {
@@ -98,8 +99,10 @@ export function FlowEditorPage({
         setLoading(true);
         const newTriggers = await client.getTriggers();
         setTriggers(newTriggers);
-        const newConditions = await client.getConditions(flowId);
+        const newConditions = await client.getConditions();
         setConditions(newConditions);
+        const newActions = await client.getActions();
+        setActions(newActions);
         if (flowId === 'new') {
           setFlowName('Untitled Flow');
           setTriggerDialogOpen(true);

@@ -1,5 +1,5 @@
 const { RingCentral } = require('../../lib/ringcentral');
-const { RINGCENTRAL_OPTIONS } = require('../lib/constants');
+const { RINGCENTRAL_OPTIONS } = require('../../lib/constants');
 
 module.exports = {
   id: 'sendTeamMessage',
@@ -21,7 +21,7 @@ module.exports = {
       type: 'boolean',
     },
   ],
-  action: ({
+  action: async ({
     user,
     params,
   }) => {
