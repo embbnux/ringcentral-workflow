@@ -166,6 +166,11 @@ export function FlowEditorPage({
     setFlowNodes(newNodes);
   }, [flowNodes]);
 
+  const triggerNode = flowNodes.find(node => node.type === 'trigger');
+  let currentTrigger;
+  if (triggerNode) {
+    currentTrigger = triggers.find(trigger => trigger.id === triggerNode.data.type);
+  }
   return (
     <Container>
       <Header color="transparent" variant='outlined'>
@@ -309,10 +314,12 @@ export function FlowEditorPage({
         conditions={conditions}
         editingConditionNodeId={editingConditionNodeId}
         allNodes={flowNodes}
-        getPreviousOutputs={(nodeId) => {}}
+        inputProperties={currentTrigger ? currentTrigger.outputData : []}
         onSave={({
           parentNodeId,
           label,
+          rules,
+          matchType,
         }) => {
           if (!editingConditionNode) {
             const parentNode = flowNodes.find(node => node.id === parentNodeId);
@@ -323,6 +330,8 @@ export function FlowEditorPage({
                 label,
                 parentNodeId,
                 nextNodes: [],
+                rules,
+                matchType,
               },
               position: { x: parentNode.position.x, y: parentNode.position.y + 120 },
             };
@@ -343,6 +352,8 @@ export function FlowEditorPage({
             editingConditionNodeId,
             {
               label,
+              rules,
+              matchType,
             }
           );
           setFlowNodes(newNodes);
