@@ -76,17 +76,6 @@ export function TriggerDialog({
         </InputLine>
       </RcDialogContent>
       <RcDialogActions>
-        {
-          editingTriggerNode && (
-            <RcButton
-              variant="outlined"
-              color="danger.b04"
-              disabled={editingTriggerNode.nextNodes.length > 0}
-            >
-              Delete
-            </RcButton>
-          )
-        }
         <RcButton
           onClick={() => { onSave(type); }}
           disabled={!type}

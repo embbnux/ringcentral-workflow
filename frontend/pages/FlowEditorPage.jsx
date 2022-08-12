@@ -16,6 +16,7 @@ import { ChevronLeft, Add, Edit } from '@ringcentral/juno-icon';
 import { FlowEditor } from '../components/FlowEditor';
 import { TriggerDialog } from '../components/TriggerDialog';
 import { ConditionDialog } from '../components/ConditionDialog';
+import { ActionDialog } from '../components/ActionDialog';
 
 const Container = styled.div`
   width: 100%;
@@ -89,6 +90,7 @@ export function FlowEditorPage({
   const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
   const [conditions, setConditions] = useState([]);
   const [actions, setActions] = useState([]);
+  const [actionDialogOpen, setActionDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!flowId) {
@@ -130,6 +132,9 @@ export function FlowEditorPage({
   const editingConditionNode = editingConditionNodeId ?
     flowNodes.find(node => node.id === editingConditionNodeId) :
     null;
+  const editingActionNode = editingActionNodeId ?
+    flowNodes.find(node => node.id === editingActionNodeId) :
+    null;
 
   const onEditNode = useCallback((e, node) => {
     if (
@@ -153,6 +158,7 @@ export function FlowEditorPage({
       setConditionDialogOpen(true);
     } else if (node.type === 'action') {
       setEditingActionNodeId(node.id);
+      setActionDialogOpen(true);
     }
   }, []);
 
@@ -255,7 +261,14 @@ export function FlowEditorPage({
           >
             <RcListItemText primary="Add condition" />
           </RcMenuItem>
-          <RcMenuItem disabled={flowNodes.length === 0}>
+          <RcMenuItem
+            disabled={flowNodes.length === 0}
+            onClick={() => {
+              setEditingActionNodeId(null);
+              setActionDialogOpen(true);
+              setAddButtonMenuOpen(false);
+            }}
+          >
             <RcListItemText primary="Add action" />
           </RcMenuItem>
         </RcMenu>
@@ -340,7 +353,6 @@ export function FlowEditorPage({
               },
               position: { x: parentNode.position.x, y: parentNode.position.y + 120 },
             };
-            parentNode.data.nextNodes.push(newConditionNode.id);
             const oldNodes = getNewNodesWithUpdatedNode(
               flowNodes,
               parentNode.id,
@@ -363,6 +375,55 @@ export function FlowEditorPage({
           );
           setFlowNodes(newNodes);
           setConditionDialogOpen(false);
+        }}
+      />
+      <ActionDialog
+        open={actionDialogOpen}
+        onClose={() => {
+          setActionDialogOpen(false);
+        }}
+        actions={actions}
+        editingActionNodeId={editingActionNodeId}
+        allNodes={flowNodes}
+        onSave={({
+          parentNodeId,
+          type,
+        }) => {
+          const action = actions.find(action => action.id === type);
+          if (!editingActionNode) {
+            const parentNode = flowNodes.find(node => node.id === parentNodeId);
+            const newActionNode = {
+              id: String(Date.now()),
+              type: 'action',
+              data: {
+                label: action.name,
+                parentNodeId,
+                nextNodes: [],
+                type,
+              },
+              position: { x: parentNode.position.x, y: parentNode.position.y + 120 },
+            };
+            const oldNodes = getNewNodesWithUpdatedNode(
+              flowNodes,
+              parentNode.id,
+              {
+                nextNodes: [...parentNode.data.nextNodes, newActionNode.id],
+              },
+            );
+            setFlowNodes([...oldNodes, newActionNode]);
+            setActionDialogOpen(false);
+            return;
+          }
+          const newNodes = getNewNodesWithUpdatedNode(
+            flowNodes,
+            editingActionNodeId,
+            {
+              label: action.name,
+              type,
+            }
+          );
+          setFlowNodes(newNodes);
+          setActionDialogOpen(false)
         }}
       />
     </Container>

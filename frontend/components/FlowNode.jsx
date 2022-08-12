@@ -218,6 +218,13 @@ export const ActionNode = (({ data, isConnectable }) => {
         style={{ top: -4, background: theme.palette.neutral.f03 }}
         isConnectable={isConnectable}
       />
+      <Handle
+        type="source"
+        position="bottom"
+        id="result"
+        style={{ top: 40, background: theme.palette.neutral.f03 }}
+        isConnectable={isConnectable}
+      />
     </>
   );
 });
