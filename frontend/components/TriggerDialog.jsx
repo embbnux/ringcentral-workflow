@@ -9,7 +9,9 @@ import {
   RcSelect,
   RcMenuItem,
   RcTypography,
+  RcIconButton,
 } from '@ringcentral/juno';
+import { Close } from '@ringcentral/juno-icon';
 
 const InputLine = styled.div`
   display: flex;
@@ -24,6 +26,12 @@ const Label = styled(RcTypography)`
 
 const Select = styled(RcSelect)`
   min-width: 200px;
+`;
+
+const CloseButton = styled(RcIconButton)`
+  position: absolute;
+  right: 0;
+  top: 0;
 `;
 
 export function TriggerDialog({
@@ -68,9 +76,17 @@ export function TriggerDialog({
         </InputLine>
       </RcDialogContent>
       <RcDialogActions>
-        <RcButton variant="outlined" onClick={onClose}>
-          Close
-        </RcButton>
+        {
+          editingTriggerNode && (
+            <RcButton
+              variant="outlined"
+              color="danger.b04"
+              disabled={editingTriggerNode.nextNodes.length > 0}
+            >
+              Delete
+            </RcButton>
+          )
+        }
         <RcButton
           onClick={() => { onSave(type); }}
           disabled={!type}
@@ -78,6 +94,10 @@ export function TriggerDialog({
           { editingTriggerNode ? 'Save' : 'Add' }
         </RcButton>
       </RcDialogActions>
+      <CloseButton
+        symbol={Close}
+        onClick={onClose}
+      />
     </RcDialog>
   );
 }

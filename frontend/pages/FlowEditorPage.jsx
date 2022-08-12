@@ -281,7 +281,7 @@ export function FlowEditorPage({
           const trigger = triggers.find(trigger => trigger.id === type);
           if (!editingTriggerNode) {
             const newTriggerNode = {
-              id: String(Date.now()),
+              id: 'trigger',
               type: 'trigger',
               data: {
                 label: trigger.name,
@@ -290,7 +290,12 @@ export function FlowEditorPage({
               },
               position: { x: 250, y: 25 },
             };
-            setFlowNodes([newTriggerNode]);
+            setFlowNodes([newTriggerNode, {
+              id: 'end',
+              type: 'end',
+              data: {},
+              position: { x: 330, y: 500 },
+            }]);
             setTriggerDialogOpen(false);
             return;
           }

@@ -12,13 +12,19 @@ import {
   RcTextField,
   RcIconButton,
 } from '@ringcentral/juno';
-import { Add, Delete } from '@ringcentral/juno-icon';
+import { Add, Delete, Close } from '@ringcentral/juno-icon';
 
 const InputLine = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   margin: 10px 0;
+`;
+
+const CloseButton = styled(RcIconButton)`
+  position: absolute;
+  right: 0;
+  top: 0;
 `;
 
 const TextField = styled(RcTextField)`
@@ -119,6 +125,7 @@ export function ConditionDialog({
   editingConditionNodeId,
   allNodes,
   onSave,
+  onDelete,
 }) {
   const [parentNodeId, setParentNodeId] = useState('');
   const [nodeLabel, setNodeLabel] = useState('');
@@ -143,7 +150,6 @@ export function ConditionDialog({
         condition: defaultCondition ? defaultCondition.id : '',
         value: '',
       };
-      console.log(defaultRule);
       setRules([defaultRule]);
       return;
     }
@@ -179,7 +185,9 @@ export function ConditionDialog({
             disabled={!!editingConditionNodeId}
           >
             {
-              allNodes.filter((node) => node.type !== 'action').map(previousNode => (
+              allNodes.filter(
+                (node) => (node.type === 'trigger'  || node.type === 'condition')
+              ).map(previousNode => (
                 <RcMenuItem key={previousNode.id} value={previousNode.id}>
                   {previousNode.data.label}
                 </RcMenuItem>
@@ -210,14 +218,12 @@ export function ConditionDialog({
               inputProperties={inputProperties}
               conditions={conditions}
               onUpdateRule={(newRule) => {
-                console.log(newRule);
                 const newRules = rules.map((rule) => {
                   if (rule.id === newRule.id) {
                     return newRule;
                   }
                   return rule;
                 });
-                console.log(newRules);
                 setRules(newRules);
               }}
               onAddRule={() => {
@@ -237,9 +243,17 @@ export function ConditionDialog({
         }
       </RcDialogContent>
       <RcDialogActions>
-        <RcButton variant="outlined" onClick={onClose}>
-          Close
-        </RcButton>
+        {
+          editingConditionNodeId && (
+            <RcButton
+              variant="outlined"
+              color="danger.b04"
+              onClick={onDelete}
+            >
+              Delete
+            </RcButton>
+          )
+        }
         <RcButton
           onClick={() => {
             onSave({
@@ -254,6 +268,10 @@ export function ConditionDialog({
           { editingConditionNodeId ? 'Save' : 'Add' }
         </RcButton>
       </RcDialogActions>
+      <CloseButton
+        symbol={Close}
+        onClick={onClose}
+      />
     </RcDialog>
   );
 }

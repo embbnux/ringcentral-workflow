@@ -84,6 +84,38 @@ export const TriggerNode = (({ data, isConnectable }) => {
   );
 });
 
+const EndNodeWrapper = styled(TriggerNodeWrapper)`
+  min-width: 50px;
+  width: 50px;
+  padding: 0;
+`;
+
+const EndText = styled(StyledText)`
+  height: 50px;
+  line-height: 50px;
+`;
+
+export const EndNode = (({ isConnectable }) => {
+  const theme = useTheme();
+
+  return (
+    <>
+      <EndNodeWrapper>
+        <EndText color="neutral.b01">
+          End
+        </EndText>
+      </EndNodeWrapper>
+      <Handle
+        type="target"
+        position="top"
+        id="end"
+        style={{ top: -5, background: theme.palette.neutral.f03 }}
+        isConnectable={isConnectable}
+      />
+    </>
+  );
+});
+
 const ConditionNodeWrapper = styled.div`
   min-width: 150px;
   border-radius: 5px;
