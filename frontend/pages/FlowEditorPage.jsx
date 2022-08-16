@@ -356,7 +356,7 @@ export function FlowEditorPage({
         }}
         conditions={conditions}
         selectBlankNode={selectBlankNode}
-        editingConditionNodeId={editingConditionNodeId}
+        editingConditionNode={editingConditionNode}
         allNodes={flowNodes}
         inputProperties={currentTrigger ? currentTrigger.outputData : []}
         onSave={({
@@ -452,6 +452,43 @@ export function FlowEditorPage({
           );
           setFlowNodes(newNodes);
           setConditionDialogOpen(false);
+        }}
+        onDelete={(nodeId) => {
+          const node = flowNodes.find(node => node.id === nodeId);
+          const parentNode = flowNodes.find(flowNode => flowNode.id === node.data.parentNodeId);
+          const blankNode = {
+            id: `blank-${Date.now()}`,
+            type: 'blank',
+            data: {
+              parentNodeId: node.data.parentNodeId,
+              parentNodeBranch: node.data.parentNodeBranch,
+              onAddNode,
+            },
+            position: node.position,
+          };
+          const parentNextNodesKey = node.data.parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
+          const oldNodes = getNewNodesWithUpdatedNode(
+            flowNodes,
+            parentNode.id,
+            {
+              [parentNextNodesKey]: [
+                ...parentNode.data[parentNextNodesKey].filter((id) => id !== nodeId),
+                blankNode.id,
+              ],
+            }
+          );
+          setFlowNodes([
+            ...oldNodes.filter((n) => {
+              return (
+                n.id !== nodeId &&
+                node.data.nextNodes.indexOf(n.id) === -1 &&
+                node.data.falsyNodes.indexOf(n.id) === -1
+              );
+            }),
+            blankNode,
+          ]);
+          setConditionDialogOpen(false);
+          setEditingActionNodeId(null);
         }}
       />
       <ActionDialog

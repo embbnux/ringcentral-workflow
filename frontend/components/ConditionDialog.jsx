@@ -141,7 +141,7 @@ export function ConditionDialog({
   onClose,
   conditions,
   inputProperties,
-  editingConditionNodeId,
+  editingConditionNode,
   selectBlankNode,
   allNodes,
   onSave,
@@ -158,7 +158,7 @@ export function ConditionDialog({
   });
 
   useEffect(() => {
-    if (!editingConditionNodeId || !open) {
+    if (!editingConditionNode || !open) {
       if (selectBlankNode) {
         setParentNodeId(selectBlankNode.data.parentNodeId);
         setParentNodeBranch(selectBlankNode.data.parentNodeBranch);
@@ -182,15 +182,20 @@ export function ConditionDialog({
       });
       return;
     }
-    const editingConditionNode = allNodes.find(node => node.id === editingConditionNodeId);
     setParentNodeId(editingConditionNode.data.parentNodeId);
     setNodeLabel(editingConditionNode.data.label);
     setRule(editingConditionNode.data.rule);
     setEnableFalsy(editingConditionNode.data.enableFalsy);
-  }, [editingConditionNodeId, open, selectBlankNode]);
+  }, [editingConditionNode, open, selectBlankNode]);
 
   const parentNode = allNodes.find(node => node.id === parentNodeId);
-
+  const disableDeleteButton = (
+    editingConditionNode &&
+    (
+      editingConditionNode.data.nextNodes.filter(id => id.indexOf('blank-') === -1).length > 0 ||
+      editingConditionNode.data.falsyNodes.filter(id => id.indexOf('blank-') === -1).length > 0
+    )
+  );
   return (
     <RcDialog
       open={open}
@@ -199,7 +204,7 @@ export function ConditionDialog({
       <RcDialogTitle>Condition node</RcDialogTitle>
       <RcDialogContent>
         {
-          (selectBlankNode || editingConditionNodeId) ? null : (
+          (selectBlankNode || editingConditionNode) ? null : (
             <InputLine>
               <Label color="neutral.f06" variant="body2">Previous node</Label>
               <Select
@@ -255,11 +260,14 @@ export function ConditionDialog({
       </RcDialogContent>
       <RcDialogActions>
         {
-          editingConditionNodeId && (
+          editingConditionNode && (
             <RcButton
               variant="outlined"
               color="danger.b04"
-              onClick={onDelete}
+              onClick={() => onDelete(editingConditionNode.id)}
+              useRcTooltip
+              title={disableDeleteButton ? 'This node depends by other nodes, cannot be deleted' : 'Delete'}
+              disabled={disableDeleteButton}
             >
               Delete
             </RcButton>
@@ -282,7 +290,7 @@ export function ConditionDialog({
             !rule.condition
           }
         >
-          { editingConditionNodeId ? 'Save' : 'Add' }
+          { editingConditionNode ? 'Save' : 'Add' }
         </RcButton>
       </RcDialogActions>
       <CloseButton
