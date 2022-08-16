@@ -128,6 +128,7 @@ export const BlankNode = (({ isConnectable, data, id }) => {
         >
           <RcMenuItem
             onClick={() => {
+              setAddButtonMenuOpen(false);
               data.onAddNode && data.onAddNode({
                 blankNodeId: id,
                 type: 'condition',
@@ -138,6 +139,7 @@ export const BlankNode = (({ isConnectable, data, id }) => {
           </RcMenuItem>
           <RcMenuItem
             onClick={() => {
+              setAddButtonMenuOpen(false);
               data.onAddNode && data.onAddNode({
                 blankNodeId: id,
                 type: 'action',

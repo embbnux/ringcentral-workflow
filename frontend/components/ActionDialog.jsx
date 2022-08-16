@@ -66,6 +66,7 @@ export function ActionDialog({
   editingActionNodeId,
   selectBlankNode,
   onSave,
+  onDelete,
 }) {
   const [parentNodeId, setParentNodeId] = useState(null);
   const [parentNodeBranch, setParentNodeBranch] = useState('default');
@@ -148,6 +149,7 @@ export function ActionDialog({
             <RcButton
               variant="outlined"
               color="danger.b04"
+              onClick={() => onDelete(editingActionNodeId)}
             >
               Delete
             </RcButton>

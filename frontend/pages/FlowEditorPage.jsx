@@ -154,6 +154,7 @@ export function FlowEditorPage({
       });
       return;
     }
+    setSelectBlankNodeId(null);
     if (node.type === 'trigger') {
       setEditingTriggerNodeId(node.id);
       setTriggerDialogOpen(true);
@@ -169,8 +170,10 @@ export function FlowEditorPage({
   const onAddNode = useCallback(({ blankNodeId, type }) => {
     setSelectBlankNodeId(blankNodeId);
     if (type === 'action') {
+      setEditingActionNodeId(null);
       setActionDialogOpen(true);
     } else if (type === 'condition') {
+      setEditingConditionNodeId(null);
       setConditionDialogOpen(true);
     }
   }, []);
@@ -512,7 +515,40 @@ export function FlowEditorPage({
             }
           );
           setFlowNodes(newNodes);
-          setActionDialogOpen(false)
+          setActionDialogOpen(false);
+        }}
+        onDelete={(nodeId) => {
+          const node = flowNodes.find(node => node.id === nodeId);
+          const parentNode = flowNodes.find(flowNode => flowNode.id === node.data.parentNodeId);
+          const blankNode = {
+            id: `blank-${Date.now()}`,
+            type: 'blank',
+            data: {
+              parentNodeId: node.data.parentNodeId,
+              parentNodeBranch: node.data.parentNodeBranch,
+              onAddNode,
+            },
+            position: node.position,
+          };
+          const parentNextNodesKey = node.data.parentNodeBranch === 'false' ?
+            'falsyNodes' :
+            'nextNodes';
+          const oldNodes = getNewNodesWithUpdatedNode(
+            flowNodes,
+            parentNode.id,
+            {
+              [parentNextNodesKey]: [
+                ...parentNode.data[parentNextNodesKey].filter((id) => id !== nodeId),
+                blankNode.id,
+              ],
+            }
+          );
+          setFlowNodes([
+            ...oldNodes.filter(n => n.id !== nodeId),
+            blankNode,
+          ]);
+          setActionDialogOpen(false);
+          setEditingActionNodeId(null);
         }}
       />
     </Container>
