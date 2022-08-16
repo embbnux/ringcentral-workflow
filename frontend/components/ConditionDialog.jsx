@@ -11,8 +11,9 @@ import {
   RcTypography,
   RcTextField,
   RcIconButton,
+  RcSwitch,
 } from '@ringcentral/juno';
-import { Add, Delete, Close } from '@ringcentral/juno-icon';
+import { Close } from '@ringcentral/juno-icon';
 
 const InputLine = styled.div`
   display: flex;
@@ -40,6 +41,10 @@ const Select = styled(RcSelect)`
   min-width: 300px;
 `;
 
+const BranchSelect = styled(Select)`
+  min-width: 150px;
+`;
+
 const RuleSelect = styled(RcSelect)`
   min-width: 150px;
   margin-right: 20px;
@@ -55,8 +60,6 @@ function RuleInput({
   onUpdateRule,
   inputProperties,
   conditions,
-  onAddRule,
-  onDeleteRule,
 }) {
   const selectedProperty = inputProperties.find(p => p.id === rule.input);
   const propertyType = selectedProperty ? selectedProperty.type : '';
@@ -105,16 +108,32 @@ function RuleInput({
         variant="outlined"
         onChange={(e) => onUpdateRule({ ...rule, value: e.target.value })}
       />
-      <RcIconButton
-        symbol={Delete}
-        onClick={onDeleteRule}
-      />
-      <RcIconButton
-        symbol={Add}
-        onClick={onAddRule}
-      />
     </InputLine>
   );
+}
+
+function ParentNodeBranchInput({
+  value,
+  onChange,
+  parentNode,
+}) {
+  if (!parentNode || parentNode.data.type !== 'condition' || !parentNode.data.enableFalsy) {
+    return null;
+  }
+  return (
+    <BranchSelect
+      value={value}
+      onChange={onChange}
+      placeholder="Select branch"
+    >
+      <RcMenuItem value="default">
+        True branch
+      </RcMenuItem>
+      <RcMenuItem value="false">
+        False branch
+      </RcMenuItem>
+    </BranchSelect>
+  )
 }
 
 export function ConditionDialog({
@@ -123,20 +142,31 @@ export function ConditionDialog({
   conditions,
   inputProperties,
   editingConditionNodeId,
+  selectBlankNode,
   allNodes,
   onSave,
   onDelete,
 }) {
   const [parentNodeId, setParentNodeId] = useState('');
+  const [parentNodeBranch, setParentNodeBranch] = useState('default');
   const [nodeLabel, setNodeLabel] = useState('');
-  const [matchType, setMatchType] = useState('');
-  const [rules, setRules] = useState([]);
+  const [enableFalsy, setEnableFalsy] = useState(false);
+  const [rule, setRule] = useState({
+    input: '',
+    condition: '',
+    value: '',
+  });
 
   useEffect(() => {
     if (!editingConditionNodeId || !open) {
-      setParentNodeId('');
+      if (selectBlankNode) {
+        setParentNodeId(selectBlankNode.data.parentNodeId);
+        setParentNodeBranch(selectBlankNode.data.parentNodeBranch);
+      } else {
+        setParentNodeId('');
+      }
       setNodeLabel('');
-      setMatchType('');
+      setEnableFalsy(false);
       const defaultProperty = inputProperties[0];
       let defaultCondition;
       if (defaultProperty) {
@@ -144,21 +174,22 @@ export function ConditionDialog({
           return condition.supportTypes.indexOf(defaultProperty.type) > -1;
         });
       }
-      const defaultRule = {
+      setRule({
         id: 1,
         input: defaultProperty ? defaultProperty.id : '',
         condition: defaultCondition ? defaultCondition.id : '',
         value: '',
-      };
-      setRules([defaultRule]);
+      });
       return;
     }
     const editingConditionNode = allNodes.find(node => node.id === editingConditionNodeId);
     setParentNodeId(editingConditionNode.data.parentNodeId);
     setNodeLabel(editingConditionNode.data.label);
-    setMatchType(editingConditionNode.data.matchType);
-    setRules(editingConditionNode.data.rules);
-  }, [editingConditionNodeId, open]);
+    setRule(editingConditionNode.data.rule);
+    setEnableFalsy(editingConditionNode.data.enableFalsy);
+  }, [editingConditionNodeId, open, selectBlankNode]);
+
+  const parentNode = allNodes.find(node => node.id === parentNodeId);
 
   return (
     <RcDialog
@@ -167,6 +198,33 @@ export function ConditionDialog({
     >
       <RcDialogTitle>Condition node</RcDialogTitle>
       <RcDialogContent>
+        {
+          (selectBlankNode || editingConditionNodeId) ? null : (
+            <InputLine>
+              <Label color="neutral.f06" variant="body2">Previous node</Label>
+              <Select
+                value={parentNodeId}
+                onChange={(e) => setParentNodeId(e.target.value)}
+                placeholder="Select previous node"
+              >
+                {
+                  allNodes.filter(
+                    (node) => (node.type === 'trigger'  || node.type === 'condition')
+                  ).map(previousNode => (
+                    <RcMenuItem key={previousNode.id} value={previousNode.id}>
+                      {previousNode.data.label}
+                    </RcMenuItem>
+                  ))
+                }
+              </Select>
+              <ParentNodeBranchInput
+                value={parentNodeBranch}
+                onChange={(e) => setParentNodeBranch(e.target.value)}
+                parentNode={parentNode}
+              />
+            </InputLine>
+          )
+        }
         <InputLine>
           <Label color="neutral.f06" variant="body2">Node name</Label>
           <TextField
@@ -176,71 +234,24 @@ export function ConditionDialog({
             placeholder="Enter node name"
           />
         </InputLine>
+        <RuleInput
+          rule={rule}
+          inputProperties={inputProperties}
+          conditions={conditions}
+          onUpdateRule={(newRule) => {
+            setRule(newRule);
+          }}
+        />
         <InputLine>
-          <Label color="neutral.f06" variant="body2">Previous node</Label>
-          <Select
-            value={parentNodeId}
-            onChange={(e) => setParentNodeId(e.target.value)}
-            placeholder="Select previous node"
-            disabled={!!editingConditionNodeId}
-          >
-            {
-              allNodes.filter(
-                (node) => (node.type === 'trigger'  || node.type === 'condition')
-              ).map(previousNode => (
-                <RcMenuItem key={previousNode.id} value={previousNode.id}>
-                  {previousNode.data.label}
-                </RcMenuItem>
-              ))
-            }
-          </Select>
+          <RcSwitch
+            formControlLabelProps={{
+              labelPlacement: 'end',
+            }}
+            label="Enable falsy branch"
+            checked={enableFalsy}
+            onChange={(e, checked) => setEnableFalsy(checked)}
+          />
         </InputLine>
-        <InputLine>
-          <Label color="neutral.f06" variant="body2">Match rule</Label>
-          <Select
-            value={matchType}
-            onChange={(e) => setMatchType(e.target.value)}
-            placeholder="Select condition match rule"
-          >
-            <RcMenuItem value="or">
-              Match ANY of the following conditions
-            </RcMenuItem>
-            <RcMenuItem value="and">
-              Match ALL of the following conditions
-            </RcMenuItem>
-          </Select>
-        </InputLine>
-        {
-          rules.map((rule) => (
-            <RuleInput
-              key={rule.id}
-              rule={rule}
-              inputProperties={inputProperties}
-              conditions={conditions}
-              onUpdateRule={(newRule) => {
-                const newRules = rules.map((rule) => {
-                  if (rule.id === newRule.id) {
-                    return newRule;
-                  }
-                  return rule;
-                });
-                setRules(newRules);
-              }}
-              onAddRule={() => {
-                const newRule = {
-                  id: rules.length + 1,
-                  input: rule.input,
-                  condition: rule.condition,
-                  value: '',
-                };
-                setRules([...rules, newRule]);
-              }}
-              onDeleteRule={() => {
-                setRules(rules.filter(r => r.id !== rule.id));
-              }}
-            />
-          ))
-        }
       </RcDialogContent>
       <RcDialogActions>
         {
@@ -258,12 +269,18 @@ export function ConditionDialog({
           onClick={() => {
             onSave({
               parentNodeId,
+              parentNodeBranch,
               label: nodeLabel,
-              rules,
-              matchType,
+              rule,
+              enableFalsy,
             });
           }}
-          disabled={!parentNodeId || !nodeLabel || !matchType}
+          disabled={
+            (!parentNodeId && !selectBlankNode) ||
+            !nodeLabel ||
+            !rule.input ||
+            !rule.condition
+          }
         >
           { editingConditionNodeId ? 'Save' : 'Add' }
         </RcButton>

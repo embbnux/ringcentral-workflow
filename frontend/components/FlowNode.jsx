@@ -1,7 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   RcTypography,
   RcIconButton,
+  RcMenu,
+  RcMenuItem,
+  RcListItemText,
 } from '@ringcentral/juno';
 import {
   styled,
@@ -9,7 +12,7 @@ import {
   useTheme,
   shadows,
 } from '@ringcentral/juno/foundation';
-import { Edit } from '@ringcentral/juno-icon';
+import { Edit, AddBorder } from '@ringcentral/juno-icon';
 import { Handle } from 'react-flow-renderer';
 
 const IconButton = styled(RcIconButton)`
@@ -84,27 +87,67 @@ export const TriggerNode = (({ data, isConnectable }) => {
   );
 });
 
-const EndNodeWrapper = styled(TriggerNodeWrapper)`
-  min-width: 50px;
-  width: 50px;
+const BlankNodeWrapper = styled.div`
+  border-radius: 50px;
+  text-align: center;
+  box-shadow: ${shadows('8')};
+  background: ${palette2('neutral', 'b01')};
+  border: 1px solid ${palette2('neutral', 'b03')};
+  width: 60px;
   padding: 0;
 `;
 
-const EndText = styled(StyledText)`
-  height: 50px;
-  line-height: 50px;
-`;
-
-export const EndNode = (({ isConnectable }) => {
+export const BlankNode = (({ isConnectable, data, id }) => {
   const theme = useTheme();
+  const buttonRef = useRef(null);
+  const [addButtonMenuOpen, setAddButtonMenuOpen] = useState(false);
 
   return (
     <>
-      <EndNodeWrapper>
-        <EndText color="neutral.b01">
-          End
-        </EndText>
-      </EndNodeWrapper>
+      <BlankNodeWrapper>
+        <RcIconButton
+          title="Add new node"
+          symbol={AddBorder}
+          useRcTooltip
+          size="small"
+          innerRef={buttonRef}
+          onClick={() => {
+            setAddButtonMenuOpen(true);
+          }}
+        />
+        <RcMenu
+          anchorEl={buttonRef.current}
+          anchorOrigin={{
+            horizontal: 'left',
+            vertical: 'bottom'
+          }}
+          onClose={() => {
+            setAddButtonMenuOpen(false);
+          }}
+          open={addButtonMenuOpen}
+        >
+          <RcMenuItem
+            onClick={() => {
+              data.onAddNode && data.onAddNode({
+                blankNodeId: id,
+                type: 'condition',
+              });
+            }}
+          >
+            <RcListItemText primary="Add condition" />
+          </RcMenuItem>
+          <RcMenuItem
+            onClick={() => {
+              data.onAddNode && data.onAddNode({
+                blankNodeId: id,
+                type: 'action',
+              });
+            }}
+          >
+            <RcListItemText primary="Add action" />
+          </RcMenuItem>
+        </RcMenu>
+      </BlankNodeWrapper>
       <Handle
         type="target"
         position="top"
@@ -164,17 +207,37 @@ export const ConditionNode = (({ data, isConnectable }) => {
       <Handle
         type="target"
         position="top"
-        id="input"
         style={{ top: -4, background: theme.palette.neutral.f03 }}
         isConnectable={isConnectable}
       />
       <Handle
         type="source"
         position="bottom"
-        id="result"
-        style={{ top: 40, background: theme.palette.neutral.f03 }}
+        id={data.enableFalsy ? 'true' : undefined}
+        style={{
+          top: 40,
+          left: data.enableFalsy ? 20 : '50%',
+          right: 'auto',
+          background: theme.palette.neutral.f03
+        }}
         isConnectable={isConnectable}
       />
+      {
+        data.enableFalsy && (
+          <Handle
+            type="source"
+            position="bottom"
+            id="false"
+            style={{
+              top: 40,
+              left: 'auto',
+              right: 20,
+              background: '#555'
+            }}
+            isConnectable={isConnectable}
+          />
+        )
+      }
     </>
   );
 });
@@ -216,13 +279,6 @@ export const ActionNode = (({ data, isConnectable }) => {
         position="top"
         id="input"
         style={{ top: -4, background: theme.palette.neutral.f03 }}
-        isConnectable={isConnectable}
-      />
-      <Handle
-        type="source"
-        position="bottom"
-        id="result"
-        style={{ top: 40, background: theme.palette.neutral.f03 }}
         isConnectable={isConnectable}
       />
     </>

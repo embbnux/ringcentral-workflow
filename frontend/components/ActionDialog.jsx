@@ -34,27 +34,62 @@ const CloseButton = styled(RcIconButton)`
   top: 0;
 `;
 
+function ParentNodeBranchInput({
+  value,
+  onChange,
+  parentNode,
+}) {
+  if (!parentNode || parentNode.data.type !== 'condition' || !parentNode.data.enableFalsy) {
+    return null;
+  }
+  return (
+    <BranchSelect
+      value={value}
+      onChange={onChange}
+      placeholder="Select branch"
+    >
+      <RcMenuItem value="default">
+        True branch
+      </RcMenuItem>
+      <RcMenuItem value="false">
+        False branch
+      </RcMenuItem>
+    </BranchSelect>
+  )
+}
+
 export function ActionDialog({
   open,
   onClose,
   actions,
   allNodes,
   editingActionNodeId,
+  selectBlankNode,
   onSave,
 }) {
-  const [parentNodeId, setParentNodeId] = useState('');
+  const [parentNodeId, setParentNodeId] = useState(null);
+  const [parentNodeBranch, setParentNodeBranch] = useState('default');
   const [type, setType] = useState('');
 
   useEffect(() => {
     if (!editingActionNodeId || !open) {
       setType('');
-      setParentNodeId('');
+      if (selectBlankNode) {
+        setParentNodeId(selectBlankNode.data.parentNodeId);
+        setParentNodeBranch(selectBlankNode.data.parentNodeBranch);
+      } else {
+        setParentNodeId('');
+        setParentNodeBranch('');
+      }
       return;
     }
     const editingActionNode = allNodes.find(node => node.id === editingActionNodeId);
     setType(editingActionNode.data.type);
     setParentNodeId(editingActionNode.data.parentNodeId);
-  }, [editingActionNodeId, open]);
+    setParentNodeBranch(editingActionNode.data.parentNodeBranch);
+  }, [editingActionNodeId, open, selectBlankNode]);
+
+  const parentNode = allNodes.find(node => node.id === parentNodeId);
 
   return (
     <RcDialog
@@ -63,25 +98,33 @@ export function ActionDialog({
     >
       <RcDialogTitle>Action node</RcDialogTitle>
       <RcDialogContent>
-        <InputLine>
-          <Label color="neutral.f06" variant="body2">Previous node</Label>
-          <Select
-            value={parentNodeId}
-            onChange={(e) => setParentNodeId(e.target.value)}
-            placeholder="Select previous node"
-            disabled={!!editingActionNodeId}
-          >
-            {
-              allNodes.filter(
-                (node) => (node.type === 'trigger'  || node.type === 'condition')
-              ).map(previousNode => (
-                <RcMenuItem key={previousNode.id} value={previousNode.id}>
-                  {previousNode.data.label}
-                </RcMenuItem>
-              ))
-            }
-          </Select>
-        </InputLine>
+        {
+          (selectBlankNode || editingActionNodeId) ? null : (
+            <InputLine>
+              <Label color="neutral.f06" variant="body2">Previous node</Label>
+              <Select
+                value={parentNodeId}
+                onChange={(e) => setParentNodeId(e.target.value)}
+                placeholder="Select previous node"
+              >
+                {
+                  allNodes.filter(
+                    (node) => (node.type === 'trigger'  || node.type === 'condition')
+                  ).map(previousNode => (
+                    <RcMenuItem key={previousNode.id} value={previousNode.id}>
+                      {previousNode.data.label}
+                    </RcMenuItem>
+                  ))
+                }
+              </Select>
+              <ParentNodeBranchInput
+                value={parentNodeBranch}
+                onChange={(e) => setParentNodeBranch(e.target.value)}
+                parentNode={parentNode}
+              />
+            </InputLine>
+          )
+        }
         <InputLine>
           <Label color="neutral.f06" variant="body2">Type</Label>
           <Select
@@ -115,9 +158,10 @@ export function ActionDialog({
             onSave({
               type,
               parentNodeId,
+              parentNodeBranch,
             });
           }}
-          disabled={!type}
+          disabled={!type || (!parentNodeId && !selectBlankNode)}
         >
           { editingActionNodeId ? 'Save' : 'Add' }
         </RcButton>

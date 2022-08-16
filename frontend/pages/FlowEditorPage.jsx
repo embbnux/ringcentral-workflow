@@ -74,7 +74,6 @@ export function FlowEditorPage({
   client,
   alertMessage,
   setLoading,
-  loading,
 }) {
   const addButtonRef = useRef(null);
   const [addButtonMenuOpen, setAddButtonMenuOpen] = useState(false);
@@ -87,6 +86,7 @@ export function FlowEditorPage({
   const [editingTriggerNodeId, setEditingTriggerNodeId] = useState(null);
   const [editingConditionNodeId, setEditingConditionNodeId] = useState(null);
   const [editingActionNodeId, setEditingActionNodeId] = useState(null);
+  const [selectBlankNodeId, setSelectBlankNodeId] = useState(null);
   const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
   const [conditions, setConditions] = useState([]);
   const [actions, setActions] = useState([]);
@@ -136,6 +136,10 @@ export function FlowEditorPage({
     flowNodes.find(node => node.id === editingActionNodeId) :
     null;
 
+  const selectBlankNode = selectBlankNodeId ?
+    flowNodes.find(node => node.id === selectBlankNodeId) :
+    null;
+
   const onEditNode = useCallback((e, node) => {
     if (
       (
@@ -159,6 +163,15 @@ export function FlowEditorPage({
     } else if (node.type === 'action') {
       setEditingActionNodeId(node.id);
       setActionDialogOpen(true);
+    }
+  }, []);
+
+  const onAddNode = useCallback(({ blankNodeId, type }) => {
+    setSelectBlankNodeId(blankNodeId);
+    if (type === 'action') {
+      setActionDialogOpen(true);
+    } else if (type === 'condition') {
+      setConditionDialogOpen(true);
     }
   }, []);
 
@@ -243,6 +256,7 @@ export function FlowEditorPage({
         >
           <RcMenuItem
             onClick={() => {
+              setSelectBlankNodeId(null);
               setEditingTriggerNodeId(null);
               setTriggerDialogOpen(true);
               setAddButtonMenuOpen(false);
@@ -254,6 +268,7 @@ export function FlowEditorPage({
           <RcMenuItem
             disabled={flowNodes.length === 0}
             onClick={() => {
+              setSelectBlankNodeId(null);
               setEditingConditionNodeId(null);
               setConditionDialogOpen(true);
               setAddButtonMenuOpen(false);
@@ -264,6 +279,7 @@ export function FlowEditorPage({
           <RcMenuItem
             disabled={flowNodes.length === 0}
             onClick={() => {
+              setSelectBlankNodeId(null);
               setEditingActionNodeId(null);
               setActionDialogOpen(true);
               setAddButtonMenuOpen(false);
@@ -293,22 +309,28 @@ export function FlowEditorPage({
         onSave={(type) => {
           const trigger = triggers.find(trigger => trigger.id === type);
           if (!editingTriggerNode) {
+            const blankNode = {
+              id: `blank-${Date.now()}`,
+              type: 'blank',
+              data: {
+                parentNodeId: 'trigger',
+                parentNodeBranch: 'default',
+                onAddNode,
+              },
+              position: { x: 325, y: 200 },
+            };
             const newTriggerNode = {
               id: 'trigger',
               type: 'trigger',
               data: {
                 label: trigger.name,
-                nextNodes: [],
+                nextNodes: [blankNode.id],
                 type,
               },
               position: { x: 250, y: 25 },
             };
-            setFlowNodes([newTriggerNode, {
-              id: 'end',
-              type: 'end',
-              data: {},
-              position: { x: 330, y: 500 },
-            }]);
+            setFlowNodes([newTriggerNode, blankNode]);
+            setSelectBlankNodeId(null);
             setTriggerDialogOpen(false);
             return;
           }
@@ -330,38 +352,90 @@ export function FlowEditorPage({
           setConditionDialogOpen(false);
         }}
         conditions={conditions}
+        selectBlankNode={selectBlankNode}
         editingConditionNodeId={editingConditionNodeId}
         allNodes={flowNodes}
         inputProperties={currentTrigger ? currentTrigger.outputData : []}
         onSave={({
           parentNodeId,
+          parentNodeBranch,
           label,
-          rules,
-          matchType,
+          rule,
+          enableFalsy,
         }) => {
           if (!editingConditionNode) {
             const parentNode = flowNodes.find(node => node.id === parentNodeId);
+            const newConditionNodePosition = selectBlankNode ?
+              selectBlankNode.position :
+              { x: parentNode.position.x, y: parentNode.position.y + 120 };
             const newConditionNode = {
-              id: String(Date.now()),
+              id: `condition-${Date.now()}`,
               type: 'condition',
               data: {
                 label,
                 parentNodeId,
+                parentNodeBranch,
                 nextNodes: [],
-                rules,
-                matchType,
+                falsyNodes: [],
+                rule,
+                enableFalsy,
               },
-              position: { x: parentNode.position.x, y: parentNode.position.y + 120 },
+              position: newConditionNodePosition,
             };
+            const blankTrueNode = {
+              id: `blank-true-${Date.now()}`,
+              type: 'blank',
+              data: {
+                parentNodeId: newConditionNode.id,
+                parentNodeBranch: 'default',
+                onAddNode,
+              },
+              position: {
+                x: enableFalsy ? newConditionNode.position.x - 120 : newConditionNode.position.x,
+                y: newConditionNode.position.y + 150,
+              },
+            };
+            newConditionNode.data.nextNodes.push(blankTrueNode.id);
+            let blankFalseNode;
+            if (enableFalsy) {
+              blankFalseNode = {
+                id: `blank-false-${Date.now()}`,
+                type: 'blank',
+                data: {
+                  parentNodeId: newConditionNode.id,
+                  parentNodeBranch: 'false',
+                  onAddNode,
+                },
+                position: {
+                  x: newConditionNode.position.x + 250,
+                  y: newConditionNode.position.y + 150,
+                },
+              };
+              newConditionNode.data.falsyNodes.push(blankFalseNode.id);
+            }
+            const parentNextNodesKey = parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
+            const blankNodeIdOfParentNode = parentNode.data[parentNextNodesKey].find((nodeId) => nodeId.indexOf('blank-') === 0);
             const oldNodes = getNewNodesWithUpdatedNode(
               flowNodes,
               parentNode.id,
               {
-                nextNodes: [...parentNode.data.nextNodes, newConditionNode.id],
+                [parentNextNodesKey]: [
+                  ...parentNode.data[parentNextNodesKey].filter((nodeId) => nodeId !== blankNodeIdOfParentNode),
+                  newConditionNode.id,
+                ],
               },
             );
-            setFlowNodes([...oldNodes, newConditionNode]);
+            const newNodeList = [
+              ...oldNodes.filter(node => node.id !== blankNodeIdOfParentNode),
+              newConditionNode,
+              blankTrueNode,
+            ];
+            if (blankFalseNode) {
+              newNodeList.push(blankFalseNode);
+            }
+            setFlowNodes(newNodeList);
             setConditionDialogOpen(false);
+            setSelectBlankNodeId(null);
             return;
           }
           const newNodes = getNewNodesWithUpdatedNode(
@@ -369,8 +443,8 @@ export function FlowEditorPage({
             editingConditionNodeId,
             {
               label,
-              rules,
-              matchType,
+              rule,
+              enableFalsy,
             }
           );
           setFlowNodes(newNodes);
@@ -383,35 +457,50 @@ export function FlowEditorPage({
           setActionDialogOpen(false);
         }}
         actions={actions}
+        selectBlankNode={selectBlankNode}
         editingActionNodeId={editingActionNodeId}
         allNodes={flowNodes}
         onSave={({
           parentNodeId,
+          parentNodeBranch,
           type,
         }) => {
           const action = actions.find(action => action.id === type);
           if (!editingActionNode) {
             const parentNode = flowNodes.find(node => node.id === parentNodeId);
+            const newActionNodePosition = selectBlankNode ?
+              selectBlankNode.position :
+              { x: parentNode.position.x, y: parentNode.position.y + 120 };
             const newActionNode = {
-              id: String(Date.now()),
+              id: `action-${Date.now()}`,
               type: 'action',
               data: {
                 label: action.name,
                 parentNodeId,
+                parentNodeBranch,
                 nextNodes: [],
                 type,
               },
-              position: { x: parentNode.position.x, y: parentNode.position.y + 120 },
+              position: newActionNodePosition,
             };
+            const parentNextNodesKey = parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
+            const blankNodeIdOfParentNode = parentNode.data[parentNextNodesKey].find((nodeId) => nodeId.indexOf('blank-') === 0);
             const oldNodes = getNewNodesWithUpdatedNode(
               flowNodes,
               parentNode.id,
               {
-                nextNodes: [...parentNode.data.nextNodes, newActionNode.id],
+                [parentNextNodesKey]: [
+                  ...parentNode.data[parentNextNodesKey].filter((nodeId) => nodeId !== blankNodeIdOfParentNode),
+                  newActionNode.id
+                ],
               },
             );
-            setFlowNodes([...oldNodes, newActionNode]);
+            setFlowNodes([
+              ...oldNodes.filter(node => node.id !== blankNodeIdOfParentNode),
+              newActionNode,
+            ]);
             setActionDialogOpen(false);
+            setSelectBlankNodeId(null);
             return;
           }
           const newNodes = getNewNodesWithUpdatedNode(
