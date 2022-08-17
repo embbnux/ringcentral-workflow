@@ -13,6 +13,7 @@ const homeRouter = require('./routers/home');
 const userRouter = require('./routers/user');
 const flowRouter = require('./routers/flow');
 const flowEditorRouter = require('./routers/flowEditor');
+const webhookRouter = require('./routers/webhook');
 
 const port = process.env.PORT;
 
@@ -37,6 +38,8 @@ app.post('/flows', checkAuth, flowRouter.createFlow);
 app.get('/flow-editor/triggers', checkAuth, flowEditorRouter.getTriggers);
 app.get('/flow-editor/conditions', checkAuth, flowEditorRouter.getConditions);
 app.get('/flow-editor/actions', checkAuth, flowEditorRouter.getActions);
+
+app.post('/webhooks/:id', webhookRouter.webhookTrigger);
 
 app.get('/', homeRouter.home);
 

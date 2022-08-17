@@ -1,5 +1,6 @@
 const { RingCentral } = require('../../lib/ringcentral');
 const { RINGCENTRAL_OPTIONS } = require('../../lib/constants');
+const { checkAndRefreshUserToken } = require('../../lib/checkAndRefreshUserToken');
 
 module.exports = {
   id: 'sendSMS',
@@ -34,6 +35,12 @@ module.exports = {
   }) => {
     const rcSDK = new RingCentral(RINGCENTRAL_OPTIONS);
     try {
+      const authResult = await checkAndRefreshUserToken(user);
+      if (!authResult) {
+        return {
+          success: false,
+        };
+      }
       await rcSDK.request({
         path: '/restapi/v1.0/account/~/extension/~/sms',
         method: 'POST',

@@ -1,5 +1,10 @@
 const { nanoid } = require('nanoid');
+const { RingCentral } = require('../lib/ringcentral');
+const { RINGCENTRAL_OPTIONS, APP_SERVER } = require('../lib/constants');
 const { Flow } = require('../models/Flow');
+const { Webhook } = require('../models/Webhook');
+const { TRIGGERS } = require('../flow/triggers');
+const { checkAndRefreshUserToken } = require('../lib/checkAndRefreshUserToken');
 
 async function getFlows(req, res) {
   try {
@@ -105,11 +110,95 @@ async function deleteFlow(req, res) {
 
 async function toggleFlow(req, res) {
   try {
+    const user = req.currentUser;
+    const authResult = await checkAndRefreshUserToken(user);
+    if (!authResult) {
+      res.status(401);
+      res.json({ result: 'error', message: 'Session expired.' });
+      return;
+    }
     const flow = req.currentFlow;
     // TODO: validate nodes
     // TODO: setup trigger to enable flow
     flow.enabled = req.body.enabled;
     await flow.save();
+    const enabledFlows = await Flow.findAll({
+      where: {
+        enabled: true,
+        userId: req.currentUser.id,
+      },
+    });
+    const eventFilterMap = {};
+    enabledFlows.forEach((enabledFlow) => {
+      const triggerNode = enabledFlow.nodes.find((node) => node.type === 'trigger');
+      const triggerType = triggerNode.data.type;
+      const trigger = TRIGGERS.find((trigger) => trigger.id === triggerType);
+      if (trigger.type === 'RC') {
+        eventFilterMap[trigger.eventFilter] = 1;
+      }
+    });
+    const eventFilters = Object.keys(eventFilterMap);
+    let webhook = await Webhook.findOne({
+      where: {
+        userId: req.currentUser.id,
+        type: 'RC',
+      }
+    });
+    const rcSDK = new RingCentral(RINGCENTRAL_OPTIONS);
+    if (eventFilters.length === 0) {
+      if (webhook && webhook.subscription) {
+        await rcSDK.request({
+          method: 'DELETE',
+          path: `/restapi/v1.0/subscription/${webhook.subscription.id}`,
+        }, user.token);
+        webhook.subscription = null;
+        await webhook.save();
+      }
+    } else {
+      if (!webhook) {
+        webhook = await Webhook.create({
+          id: nanoid(15),
+          userId: user.id,
+          type: 'RC',
+          subscription: null,
+        });
+      }
+      if (!webhook.subscription) {
+        const response = await rcSDK.request({
+          method: 'POST',
+          path: '/restapi/v1.0/subscription',
+          body: {
+            eventFilters,
+            deliveryMode: {
+              transportType: 'WebHook',
+              address: `${APP_SERVER}/webhooks/${webhook.id}`,
+            },
+            expiresIn: 315360000,
+          }
+        }, user.token);
+        const subscription = await response.json();
+        webhook.subscription = subscription;
+        webhook.expiredAt = new Date(subscription.expirationTime);
+        await webhook.save();
+      } else {
+        const response = await rcSDK.request({
+          method: 'PUT',
+          path: `/restapi/v1.0/subscription/${webhook.subscription.id}`,
+          body: {
+            eventFilters,
+            deliveryMode: {
+              transportType: 'WebHook',
+              address: `${APP_SERVER}/webhooks/${webhook.id}`,
+            },
+            expiresIn: 315360000,
+          }
+        }, user.token);
+        const subscription = await response.json();
+        webhook.subscription = subscription;
+        webhook.expiredAt = new Date(subscription.expirationTime);
+        await webhook.save();
+      }
+    }
     res.status(200);
     res.json({
       id: flow.id,

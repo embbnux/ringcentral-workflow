@@ -97,7 +97,6 @@ class RingCentral {
         'Authorization': `${token.token_type} ${token.access_token}`,
       },
     });
-    console.log(response);
     if (Number.parseInt(response.status, 10) >= 400) {
       throw new Error('request data error', response.status);
     }
