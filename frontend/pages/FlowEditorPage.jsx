@@ -503,10 +503,12 @@ export function FlowEditorPage({
         selectedBlankNode={selectedBlankNode}
         editingActionNodeId={editingActionNodeId}
         allNodes={flowNodes}
+        inputProperties={currentTrigger ? currentTrigger.outputData : []}
         onSave={({
           parentNodeId,
           parentNodeBranch,
           type,
+          paramValues,
         }) => {
           const action = actions.find(action => action.id === type);
           if (!editingActionNode) {
@@ -523,6 +525,7 @@ export function FlowEditorPage({
                 parentNodeBranch,
                 nextNodes: [],
                 type,
+                paramValues,
               },
               position: newActionNodePosition,
             };
@@ -552,6 +555,7 @@ export function FlowEditorPage({
             {
               label: action.name,
               type,
+              paramValues,
             }
           );
           setFlowNodes(newNodes);

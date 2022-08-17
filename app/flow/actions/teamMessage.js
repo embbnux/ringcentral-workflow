@@ -7,11 +7,13 @@ module.exports = {
   type: 'RC',
   params: [
     {
-      name: 'messageText',
-      type: 'string',
+      id: 'messageText',
+      name: 'Message Text',
+      type: 'text',
     },
     {
-      name: 'conversationId',
+      id: 'conversationId',
+      name: 'Conversation Id',
       type: 'string',
     },
   ],
@@ -21,6 +23,9 @@ module.exports = {
       type: 'boolean',
     },
   ],
+  // getParamsOptions: async () => {
+
+  // },
   action: async ({
     user,
     params,

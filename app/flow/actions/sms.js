@@ -9,7 +9,7 @@ module.exports = {
     {
       id: 'messageText',
       name: 'Message Text',
-      type: 'string',
+      type: 'text',
     },
     {
       id: 'toPhoneNumber',

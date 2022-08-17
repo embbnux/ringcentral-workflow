@@ -10,6 +10,8 @@ import {
   RcMenuItem,
   RcTypography,
   RcIconButton,
+  RcTextField,
+  RcTextarea,
 } from '@ringcentral/juno';
 import { Close } from '@ringcentral/juno-icon';
 import { ParentNodeInput } from './ParentNodeInput';
@@ -35,6 +37,87 @@ const CloseButton = styled(RcIconButton)`
   top: 0;
 `;
 
+const ParamLabel = styled(RcTypography)`
+  margin-right: 10px;
+  min-width: 150px;
+`;
+
+const ParamInputLine = styled(InputLine)`
+  margin: 10px 0;
+  align-items: baseline;
+`;
+
+const ParamTextarea = styled(RcTextarea)`
+  flex: 1;
+`;
+
+const ParamTextField = styled(RcTextField)`
+  flex: 1;
+`;
+
+function ParamInput({
+  param,
+  value,
+  onChange,
+}) {
+  return (
+    <ParamInputLine>
+      <ParamLabel color="neutral.f06" variant="body1">{param.name}</ParamLabel>
+      {
+        param.type === 'string' ? (
+          <ParamTextField
+            value={value}
+            onChange={onChange}
+          />
+        ) : null
+      }
+      {
+        param.type === 'text' ? (
+          <ParamTextarea
+            value={value}
+            onChange={onChange}
+            minRows={2}
+          />
+        ) : null
+      } 
+    </ParamInputLine>
+  );
+}
+
+const ParamsInputWrapper = styled.div`
+  margin-top: 20px;
+`;
+
+function ActionParamsInput({
+  action,
+  values,
+  setValues,
+}) {
+  if (!action) {
+    return null;
+  }
+  return (
+    <ParamsInputWrapper>
+      <Label color="neutral.f06" variant="body2">Action params</Label>
+      {
+        action.params.map(param => (
+          <ParamInput
+            key={param.id}
+            param={param}
+            value={values[param.id] || ''}
+            onChange={(e) => {
+              setValues({
+                ...values,
+                [param.id]: e.target.value,
+              });
+            }}
+          />
+        ))
+      }
+    </ParamsInputWrapper>
+  );
+}
+
 export function ActionDialog({
   open,
   onClose,
@@ -44,14 +127,17 @@ export function ActionDialog({
   selectedBlankNode,
   onSave,
   onDelete,
+  inputProperties,
 }) {
   const [parentNodeId, setParentNodeId] = useState(null);
   const [parentNodeBranch, setParentNodeBranch] = useState('default');
   const [type, setType] = useState('');
+  const [paramValues, setParamValues] = useState({});
 
   useEffect(() => {
     if (!editingActionNodeId || !open) {
       setType('');
+      setParamValues({});
       if (selectedBlankNode) {
         setParentNodeId(selectedBlankNode.data.parentNodeId);
         setParentNodeBranch(selectedBlankNode.data.parentNodeBranch);
@@ -65,9 +151,9 @@ export function ActionDialog({
     setType(editingActionNode.data.type);
     setParentNodeId(editingActionNode.data.parentNodeId);
     setParentNodeBranch(editingActionNode.data.parentNodeBranch);
+    setParamValues(editingActionNode.data.paramValues);
   }, [editingActionNodeId, open, selectedBlankNode]);
 
-  const parentNode = allNodes.find(node => node.id === parentNodeId);
   const action = actions.find(action => action.id === type);
 
   return (
@@ -111,6 +197,12 @@ export function ActionDialog({
             }
           </Select>
         </InputLine>
+        <ActionParamsInput
+          action={action}
+          values={paramValues}
+          setValues={setParamValues}
+          inputProperties={inputProperties}
+        />
       </RcDialogContent>
       <RcDialogActions>
         {
@@ -130,6 +222,7 @@ export function ActionDialog({
               type,
               parentNodeId,
               parentNodeBranch,
+              paramValues,
             });
           }}
           disabled={!type || (!parentNodeId && !selectedBlankNode)}
