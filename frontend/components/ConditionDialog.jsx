@@ -14,6 +14,7 @@ import {
   RcSwitch,
 } from '@ringcentral/juno';
 import { Close } from '@ringcentral/juno-icon';
+import { ParentNodeInput } from './ParentNodeInput';
 
 const InputLine = styled.div`
   display: flex;
@@ -35,14 +36,6 @@ const TextField = styled(RcTextField)`
 const Label = styled(RcTypography)`
   margin-right: 20px;
   width: 100px;
-`;
-
-const Select = styled(RcSelect)`
-  min-width: 300px;
-`;
-
-const BranchSelect = styled(Select)`
-  min-width: 150px;
 `;
 
 const RuleSelect = styled(RcSelect)`
@@ -112,30 +105,6 @@ function RuleInput({
   );
 }
 
-function ParentNodeBranchInput({
-  value,
-  onChange,
-  parentNode,
-}) {
-  if (!parentNode || parentNode.type !== 'condition' || !parentNode.data.enableFalsy) {
-    return null;
-  }
-  return (
-    <BranchSelect
-      value={value}
-      onChange={onChange}
-      placeholder="Select branch"
-    >
-      <RcMenuItem value="default">
-        True branch
-      </RcMenuItem>
-      <RcMenuItem value="false">
-        False branch
-      </RcMenuItem>
-    </BranchSelect>
-  )
-}
-
 function getConditionDescription(rule, inputProperties, conditions) {
   const selectedProperty = inputProperties.find(p => p.id === rule.input);
   const condition = conditions.find(c => c.id === rule.condition);
@@ -194,7 +163,6 @@ export function ConditionDialog({
     setEnableFalsy(editingConditionNode.data.enableFalsy);
   }, [editingConditionNode, open, selectBlankNode]);
 
-  const parentNode = allNodes.find(node => node.id === parentNodeId);
   const disableDeleteButton = (
     editingConditionNode &&
     (
@@ -213,25 +181,16 @@ export function ConditionDialog({
           (selectBlankNode || editingConditionNode) ? null : (
             <InputLine>
               <Label color="neutral.f06" variant="body2">Previous node</Label>
-              <Select
-                value={parentNodeId}
-                onChange={(e) => setParentNodeId(e.target.value)}
-                placeholder="Select previous node"
-              >
-                {
+              <ParentNodeInput
+                parentNodeId={parentNodeId}
+                parentNodeBranch={parentNodeBranch}
+                onParentNodeIdChange={(e) => setParentNodeId(e.target.value)}
+                onParentNodeBranchChange={(e) => setParentNodeBranch(e.target.value)}
+                parentNodes={
                   allNodes.filter(
                     (node) => (node.type === 'trigger'  || node.type === 'condition')
-                  ).map(previousNode => (
-                    <RcMenuItem key={previousNode.id} value={previousNode.id}>
-                      {previousNode.data.label}
-                    </RcMenuItem>
-                  ))
+                  )
                 }
-              </Select>
-              <ParentNodeBranchInput
-                value={parentNodeBranch}
-                onChange={(e) => setParentNodeBranch(e.target.value)}
-                parentNode={parentNode}
               />
             </InputLine>
           )
@@ -261,6 +220,7 @@ export function ConditionDialog({
             label="Enable falsy branch"
             checked={enableFalsy}
             onChange={(e, checked) => setEnableFalsy(checked)}
+            disabled={!!editingConditionNode}
           />
         </InputLine>
       </RcDialogContent>
@@ -271,8 +231,6 @@ export function ConditionDialog({
               variant="outlined"
               color="danger.b04"
               onClick={() => onDelete(editingConditionNode.id)}
-              useRcTooltip
-              title={disableDeleteButton ? 'This node depends by other nodes, cannot be deleted' : 'Delete'}
               disabled={disableDeleteButton}
             >
               Delete

@@ -12,6 +12,7 @@ import {
   RcIconButton,
 } from '@ringcentral/juno';
 import { Close } from '@ringcentral/juno-icon';
+import { ParentNodeInput } from './ParentNodeInput';
 
 const InputLine = styled.div`
   display: flex;
@@ -33,30 +34,6 @@ const CloseButton = styled(RcIconButton)`
   right: 0;
   top: 0;
 `;
-
-function ParentNodeBranchInput({
-  value,
-  onChange,
-  parentNode,
-}) {
-  if (!parentNode || parentNode.data.type !== 'condition' || !parentNode.data.enableFalsy) {
-    return null;
-  }
-  return (
-    <BranchSelect
-      value={value}
-      onChange={onChange}
-      placeholder="Select branch"
-    >
-      <RcMenuItem value="default">
-        True branch
-      </RcMenuItem>
-      <RcMenuItem value="false">
-        False branch
-      </RcMenuItem>
-    </BranchSelect>
-  )
-}
 
 export function ActionDialog({
   open,
@@ -91,6 +68,7 @@ export function ActionDialog({
   }, [editingActionNodeId, open, selectBlankNode]);
 
   const parentNode = allNodes.find(node => node.id === parentNodeId);
+  const action = actions.find(action => action.id === type);
 
   return (
     <RcDialog
@@ -103,25 +81,16 @@ export function ActionDialog({
           (selectBlankNode || editingActionNodeId) ? null : (
             <InputLine>
               <Label color="neutral.f06" variant="body2">Previous node</Label>
-              <Select
-                value={parentNodeId}
-                onChange={(e) => setParentNodeId(e.target.value)}
-                placeholder="Select previous node"
-              >
-                {
+              <ParentNodeInput
+                parentNodeId={parentNodeId}
+                parentNodeBranch={parentNodeBranch}
+                onParentNodeIdChange={(e) => setParentNodeId(e.target.value)}
+                onParentNodeBranchChange={(e) => setParentNodeBranch(e.target.value)}
+                parentNodes={
                   allNodes.filter(
                     (node) => (node.type === 'trigger'  || node.type === 'condition')
-                  ).map(previousNode => (
-                    <RcMenuItem key={previousNode.id} value={previousNode.id}>
-                      {previousNode.data.label}
-                    </RcMenuItem>
-                  ))
+                  )
                 }
-              </Select>
-              <ParentNodeBranchInput
-                value={parentNodeBranch}
-                onChange={(e) => setParentNodeBranch(e.target.value)}
-                parentNode={parentNode}
               />
             </InputLine>
           )
