@@ -92,6 +92,27 @@ export function FlowEditorPage({
   const [actions, setActions] = useState([]);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
 
+  const onDragNode = useCallback((e, draggedNode) => {
+    const newNodes = flowNodes.map((node) => {
+      if (node.id !== draggedNode.id) {
+        return node;
+      }
+      return draggedNode;
+    });
+    setFlowNodes(newNodes);
+  }, [flowNodes]);
+
+  const onAddNode = useCallback(({ blankNodeId, type }) => {
+    setSelectBlankNodeId(blankNodeId);
+    if (type === 'action') {
+      setEditingActionNodeId(null);
+      setActionDialogOpen(true);
+    } else if (type === 'condition') {
+      setEditingConditionNodeId(null);
+      setConditionDialogOpen(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (!flowId) {
       return;
@@ -111,7 +132,18 @@ export function FlowEditorPage({
         } else {
           const flow = await client.getFlow(flowId);
           setFlowName(flow.name);
-          setFlowNodes(flow.nodes);
+          setFlowNodes(flow.nodes.map((node) => {
+            if (node.type === 'blank') {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  onAddNode,
+                },
+              };
+            }
+            return node;
+          }));
         }
         setLoading(false);
       } catch (e) {
@@ -166,27 +198,6 @@ export function FlowEditorPage({
       setActionDialogOpen(true);
     }
   }, []);
-
-  const onAddNode = useCallback(({ blankNodeId, type }) => {
-    setSelectBlankNodeId(blankNodeId);
-    if (type === 'action') {
-      setEditingActionNodeId(null);
-      setActionDialogOpen(true);
-    } else if (type === 'condition') {
-      setEditingConditionNodeId(null);
-      setConditionDialogOpen(true);
-    }
-  }, []);
-
-  const onDragNode = useCallback((e, draggedNode) => {
-    const newNodes = flowNodes.map((node) => {
-      if (node.id !== draggedNode.id) {
-        return node;
-      }
-      return draggedNode;
-    });
-    setFlowNodes(newNodes);
-  }, [flowNodes]);
 
   const triggerNode = flowNodes.find(node => node.type === 'trigger');
   let currentTrigger;
@@ -291,7 +302,40 @@ export function FlowEditorPage({
             <RcListItemText primary="Add action" />
           </RcMenuItem>
         </RcMenu>
-        <Button>
+        <Button
+          onClick={async () => {
+            try {
+              setLoading(true);
+              const nodes = flowNodes.map(node => {
+                if (node.type === 'blank') {
+                  return {
+                    id: node.id,
+                    type: node.type,
+                    position: node.position,
+                    data: {
+                      parentNodeId: node.data.parentNodeId,
+                      parentNodeBranch: node.data.parentNodeBranch,
+                    },
+                  };
+                }
+                return node;
+              });
+              if (flowId === 'new') {
+                const flow = await client.createFlow(flowName, nodes);
+                setLoading(false);
+                alertMessage({ message: 'Flow saved successfully', type: 'success' });
+                navigate(`/app/flows/${flow.id}`);
+                return;
+              }
+              await client.updateFlow(flowId, flowName, nodes);
+              setLoading(false);
+              alertMessage({ message: 'Flow saved successfully', type: 'success' });
+            } catch (e) {
+              console.error(e);
+              alertMessage({ message: 'Failed to save flow', type: 'error' });
+            }
+          }}
+        >
           Save
         </Button>
       </Header>
