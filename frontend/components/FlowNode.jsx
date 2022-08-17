@@ -255,6 +255,7 @@ export const ConditionNode = (({ data, isConnectable }) => {
 
 const ActionNodeWrapper = styled(ConditionNodeWrapper)`
   border-radius: 50px;
+  padding: 0 20px;
 `;
 
 export const ActionNode = (({ data, isConnectable }) => {
