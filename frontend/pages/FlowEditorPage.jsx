@@ -365,6 +365,7 @@ export function FlowEditorPage({
           label,
           rule,
           enableFalsy,
+          description,
         }) => {
           if (!editingConditionNode) {
             const parentNode = flowNodes.find(node => node.id === parentNodeId);
@@ -382,6 +383,7 @@ export function FlowEditorPage({
                 falsyNodes: [],
                 rule,
                 enableFalsy,
+                description,
               },
               position: newConditionNodePosition,
             };
@@ -447,6 +449,7 @@ export function FlowEditorPage({
             {
               label,
               rule,
+              description,
               enableFalsy,
             }
           );

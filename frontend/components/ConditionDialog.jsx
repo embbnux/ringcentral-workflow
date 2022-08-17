@@ -117,7 +117,7 @@ function ParentNodeBranchInput({
   onChange,
   parentNode,
 }) {
-  if (!parentNode || parentNode.data.type !== 'condition' || !parentNode.data.enableFalsy) {
+  if (!parentNode || parentNode.type !== 'condition' || !parentNode.data.enableFalsy) {
     return null;
   }
   return (
@@ -134,6 +134,12 @@ function ParentNodeBranchInput({
       </RcMenuItem>
     </BranchSelect>
   )
+}
+
+function getConditionDescription(rule, inputProperties, conditions) {
+  const selectedProperty = inputProperties.find(p => p.id === rule.input);
+  const condition = conditions.find(c => c.id === rule.condition);
+  return `${selectedProperty.name} ${condition.name} ${rule.value}`;
 }
 
 export function ConditionDialog({
@@ -281,6 +287,7 @@ export function ConditionDialog({
               label: nodeLabel,
               rule,
               enableFalsy,
+              description: getConditionDescription(rule, inputProperties, conditions),
             });
           }}
           disabled={

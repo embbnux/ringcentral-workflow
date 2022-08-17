@@ -163,11 +163,12 @@ export const BlankNode = (({ isConnectable, data, id }) => {
 
 const ConditionNodeWrapper = styled.div`
   min-width: 150px;
+  max-width: 400px;
   border-radius: 5px;
   background: ${palette2('neutral', 'b01')};
   border: 1px solid ${palette2('neutral', 'b03')};
   text-align: center;
-  padding: 0 20px;
+  padding: 10px 20px;
   box-shadow: ${shadows('8')};
   position: relative;
 
@@ -178,6 +179,11 @@ const ConditionNodeWrapper = styled.div`
   }
 `;
 
+const ConditionText = styled(RcTypography)`
+  height: 20px;
+  line-height: 20px;
+`;
+
 export const ConditionNode = (({ data, isConnectable }) => {
   const theme = useTheme();
   const buttonRef = useRef(null);
@@ -185,9 +191,12 @@ export const ConditionNode = (({ data, isConnectable }) => {
   return (
     <>
       <ConditionNodeWrapper>
-        <StyledText color="neutral.f06">
+        <ConditionText color="neutral.f06">
           {data.label}
-        </StyledText>
+        </ConditionText>
+        <ConditionText color="neutral.f04" variant="caption1">
+          {data.description}
+        </ConditionText>
         <IconButton
           symbol={Edit}
           color="neutral.f06"
@@ -217,7 +226,7 @@ export const ConditionNode = (({ data, isConnectable }) => {
         position="bottom"
         id={data.enableFalsy ? 'true' : undefined}
         style={{
-          top: 40,
+          top: 62,
           left: data.enableFalsy ? 20 : '50%',
           right: 'auto',
           background: theme.palette.neutral.f03
@@ -231,7 +240,7 @@ export const ConditionNode = (({ data, isConnectable }) => {
             position="bottom"
             id="false"
             style={{
-              top: 40,
+              top: 62,
               left: 'auto',
               right: 20,
               background: '#555'
