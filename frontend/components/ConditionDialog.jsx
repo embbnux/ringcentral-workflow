@@ -117,7 +117,7 @@ export function ConditionDialog({
   conditions,
   inputProperties,
   editingConditionNode,
-  selectBlankNode,
+  selectedBlankNode,
   allNodes,
   onSave,
   onDelete,
@@ -134,9 +134,9 @@ export function ConditionDialog({
 
   useEffect(() => {
     if (!editingConditionNode || !open) {
-      if (selectBlankNode) {
-        setParentNodeId(selectBlankNode.data.parentNodeId);
-        setParentNodeBranch(selectBlankNode.data.parentNodeBranch);
+      if (selectedBlankNode) {
+        setParentNodeId(selectedBlankNode.data.parentNodeId);
+        setParentNodeBranch(selectedBlankNode.data.parentNodeBranch);
       } else {
         setParentNodeId('');
       }
@@ -161,7 +161,7 @@ export function ConditionDialog({
     setNodeLabel(editingConditionNode.data.label);
     setRule(editingConditionNode.data.rule);
     setEnableFalsy(editingConditionNode.data.enableFalsy);
-  }, [editingConditionNode, open, selectBlankNode]);
+  }, [editingConditionNode, open, selectedBlankNode]);
 
   const disableDeleteButton = (
     editingConditionNode &&
@@ -178,7 +178,7 @@ export function ConditionDialog({
       <RcDialogTitle>Condition node</RcDialogTitle>
       <RcDialogContent>
         {
-          (selectBlankNode || editingConditionNode) ? null : (
+          (selectedBlankNode || editingConditionNode) ? null : (
             <InputLine>
               <Label color="neutral.f06" variant="body2">Previous node</Label>
               <ParentNodeInput
@@ -249,7 +249,7 @@ export function ConditionDialog({
             });
           }}
           disabled={
-            (!parentNodeId && !selectBlankNode) ||
+            (!parentNodeId && !selectedBlankNode) ||
             !nodeLabel ||
             !rule.input ||
             !rule.condition

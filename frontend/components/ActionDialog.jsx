@@ -41,7 +41,7 @@ export function ActionDialog({
   actions,
   allNodes,
   editingActionNodeId,
-  selectBlankNode,
+  selectedBlankNode,
   onSave,
   onDelete,
 }) {
@@ -52,9 +52,9 @@ export function ActionDialog({
   useEffect(() => {
     if (!editingActionNodeId || !open) {
       setType('');
-      if (selectBlankNode) {
-        setParentNodeId(selectBlankNode.data.parentNodeId);
-        setParentNodeBranch(selectBlankNode.data.parentNodeBranch);
+      if (selectedBlankNode) {
+        setParentNodeId(selectedBlankNode.data.parentNodeId);
+        setParentNodeBranch(selectedBlankNode.data.parentNodeBranch);
       } else {
         setParentNodeId('');
         setParentNodeBranch('');
@@ -65,7 +65,7 @@ export function ActionDialog({
     setType(editingActionNode.data.type);
     setParentNodeId(editingActionNode.data.parentNodeId);
     setParentNodeBranch(editingActionNode.data.parentNodeBranch);
-  }, [editingActionNodeId, open, selectBlankNode]);
+  }, [editingActionNodeId, open, selectedBlankNode]);
 
   const parentNode = allNodes.find(node => node.id === parentNodeId);
   const action = actions.find(action => action.id === type);
@@ -78,7 +78,7 @@ export function ActionDialog({
       <RcDialogTitle>Action node</RcDialogTitle>
       <RcDialogContent>
         {
-          (selectBlankNode || editingActionNodeId) ? null : (
+          (selectedBlankNode || editingActionNodeId) ? null : (
             <InputLine>
               <Label color="neutral.f06" variant="body2">Previous node</Label>
               <ParentNodeInput
@@ -132,7 +132,7 @@ export function ActionDialog({
               parentNodeBranch,
             });
           }}
-          disabled={!type || (!parentNodeId && !selectBlankNode)}
+          disabled={!type || (!parentNodeId && !selectedBlankNode)}
         >
           { editingActionNodeId ? 'Save' : 'Add' }
         </RcButton>

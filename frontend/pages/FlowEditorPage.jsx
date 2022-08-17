@@ -86,7 +86,7 @@ export function FlowEditorPage({
   const [editingTriggerNodeId, setEditingTriggerNodeId] = useState(null);
   const [editingConditionNodeId, setEditingConditionNodeId] = useState(null);
   const [editingActionNodeId, setEditingActionNodeId] = useState(null);
-  const [selectBlankNodeId, setSelectBlankNodeId] = useState(null);
+  const [selectedBlankNodeId, setSelectBlankNodeId] = useState(null);
   const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
   const [conditions, setConditions] = useState([]);
   const [actions, setActions] = useState([]);
@@ -136,8 +136,8 @@ export function FlowEditorPage({
     flowNodes.find(node => node.id === editingActionNodeId) :
     null;
 
-  const selectBlankNode = selectBlankNodeId ?
-    flowNodes.find(node => node.id === selectBlankNodeId) :
+  const selectedBlankNode = selectedBlankNodeId ?
+    flowNodes.find(node => node.id === selectedBlankNodeId) :
     null;
 
   const onEditNode = useCallback((e, node) => {
@@ -355,7 +355,7 @@ export function FlowEditorPage({
           setConditionDialogOpen(false);
         }}
         conditions={conditions}
-        selectBlankNode={selectBlankNode}
+        selectedBlankNode={selectedBlankNode}
         editingConditionNode={editingConditionNode}
         allNodes={flowNodes}
         inputProperties={currentTrigger ? currentTrigger.outputData : []}
@@ -369,8 +369,8 @@ export function FlowEditorPage({
         }) => {
           if (!editingConditionNode) {
             const parentNode = flowNodes.find(node => node.id === parentNodeId);
-            const newConditionNodePosition = selectBlankNode ?
-              selectBlankNode.position :
+            const newConditionNodePosition = selectedBlankNode ?
+              selectedBlankNode.position :
               { x: parentNode.position.x, y: parentNode.position.y + 120 };
             const newConditionNode = {
               id: `condition-${Date.now()}`,
@@ -500,7 +500,7 @@ export function FlowEditorPage({
           setActionDialogOpen(false);
         }}
         actions={actions}
-        selectBlankNode={selectBlankNode}
+        selectedBlankNode={selectedBlankNode}
         editingActionNodeId={editingActionNodeId}
         allNodes={flowNodes}
         onSave={({
@@ -511,8 +511,8 @@ export function FlowEditorPage({
           const action = actions.find(action => action.id === type);
           if (!editingActionNode) {
             const parentNode = flowNodes.find(node => node.id === parentNodeId);
-            const newActionNodePosition = selectBlankNode ?
-              selectBlankNode.position :
+            const newActionNodePosition = selectedBlankNode ?
+              selectedBlankNode.position :
               { x: parentNode.position.x, y: parentNode.position.y + 120 };
             const newActionNode = {
               id: `action-${Date.now()}`,
