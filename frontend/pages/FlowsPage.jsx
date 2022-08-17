@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   RcTypography,
   RcButton,
@@ -28,7 +28,27 @@ const Title = styled(RcTypography)`
 
 export function FlowsPage({
   navigate,
+  client,
+  setLoading,
+  alertMessage,
 }) {
+  const [flows, setFlows] = useState([]);
+
+  useEffect(() => {
+    const fetchFlows = async () => {
+      setLoading(true);
+      try {
+        const flows = await client.getFlows();
+        setFlows(flows);
+        setLoading(false);
+      } catch (e) {
+        console.error(e);
+        setLoading(false);
+        alertMessage({ type: 'error', message: 'Failed to load flows' });
+      }
+    };
+    fetchFlows();
+  }, []);
   return (
     <Container>
       <TitleLine>
@@ -45,17 +65,45 @@ export function FlowsPage({
       </TitleLine>
       <FlowList
         navigate={navigate}
-        flows={[
-          {
-            id: '1234',
-            name: 'New SMS Flow',
-          },
-          {
-            id: '12345',
-            name: 'New Call Flow',
-          },
-        ]}
+        flows={flows}
+        onEdit={(id) => navigate(`/app/flows/${id}`)}
+        onDelete={async (id) => {
+          setLoading(true);
+          try {
+            await client.deleteFlow(id);
+            setFlows(flows.filter(flow => flow.id !== id));
+            setLoading(false);
+          } catch (e) {
+            console.error(e);
+            setLoading(false);
+            alertMessage({ type: 'error', message: 'Failed to delete flow' });
+          }
+        }}
+        onToggle={async (id, enabled) => {
+          setLoading(true);
+          try {
+            const newFlow = await client.toggleFlow(id, enabled);
+            setFlows(flows.map((flow) => {
+              if (flow.id === id) {
+                return newFlow;
+              }
+              return flow;
+            }));
+            setLoading(false);
+          } catch (e) {
+            console.error(e);
+            setLoading(false);
+            alertMessage({ type: 'error', message: 'Failed to toggle flow' });
+          }
+        }}
       />
+      {
+        flows.length === 0 && (
+          <RcTypography color="neutral.f06">
+            No flows added yet.
+          </RcTypography>
+        )
+      }
     </Container>
   );
 }

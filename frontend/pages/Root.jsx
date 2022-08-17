@@ -8,7 +8,7 @@ import { LoginPage } from './LoginPage';
 import { App } from './App';
 import { FlowsPage } from './FlowsPage';
 import { FlowEditorPage } from './FlowEditorPage';
-import { AboutPage } from './AboutPage';
+import { HelpPage } from './HelpPage';
 
 const Container = styled.div`
   height: 100%;
@@ -53,6 +53,9 @@ export function Root({ client }) {
             element={
               <FlowsPage
                 navigate={navigate}
+                setLoading={setLoading}
+                client={client}
+                alertMessage={setMessage}
               />
             }
           />
@@ -69,9 +72,9 @@ export function Root({ client }) {
             }
           />
           <Route
-            path="about"
+            path="help"
             element={
-              <AboutPage />
+              <HelpPage />
             }
           />
         </Route>

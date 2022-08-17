@@ -33,6 +33,18 @@ export class Client extends EventEmitter {
     return flow;
   }
 
+  async deleteFlow(id) {
+    const flow = await this._request(`/flows/${id}`, 'DELETE');
+    return flow;
+  }
+
+  async toggleFlow(id, enabled) {
+    const flow = await this._request(`/flows/${id}/toggle`, 'POST', {
+      enabled
+    });
+    return flow;
+  }
+
   async getTriggers() {
     const triggers = await this._request('/flow-editor/triggers');
     return triggers;

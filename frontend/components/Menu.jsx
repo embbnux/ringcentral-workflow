@@ -65,10 +65,10 @@ export function Menu({
           <RcListItemText primary="Flows" />
         </MenuItem>
         <MenuItem
-          onClick={() => navigate('/app/about')}
-          selected={location.pathname === '/app/about'}
+          onClick={() => navigate('/app/help')}
+          selected={location.pathname === '/app/help'}
         >
-          <RcListItemText primary="About" />
+          <RcListItemText primary="Help" />
         </MenuItem>
       </RcMenuList>
     </StyledDrawer>

@@ -9,10 +9,10 @@ export const Container = styled.div`
   box-sizing: border-box;
 `;
 
-export function AboutPage() {
+export function HelpPage() {
   return (
     <Container>
-      <RcTypography variant="headline2">About</RcTypography>
+      <RcTypography variant="headline2">Help</RcTypography>
     </Container>
   );
 }

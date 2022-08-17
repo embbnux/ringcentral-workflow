@@ -22,28 +22,6 @@ async function getFlows(req, res) {
   }
 }
 
-async function getFlow(req, res) {
-  try {
-    const flow = await Flow.findByPk(req.params.id);
-    if (!flow || flow.userId !== req.currentUser.id) {
-      res.status(404);
-      res.json({ result: 'error', message: 'Not found.' });
-      return;
-    }
-    res.status(200);
-    res.json({
-      id: flow.id,
-      name: flow.name,
-      nodes: flow.nodes,
-      enabled: flow.enabled,
-    });
-  } catch (e) {
-    console.log(e);
-    res.status(500);
-    res.json({ result: 'error', message: 'Internal server error' });
-  }
-}
-
 async function createFlow(req, res) {
   try {
     // TODO: validate nodes
@@ -58,6 +36,8 @@ async function createFlow(req, res) {
     res.json({
       id: flow.id,
       name: flow.name,
+      nodes: flow.nodes,
+      enabled: flow.enabled,
     });
   } catch (e) {
     console.log(e);
@@ -66,17 +46,51 @@ async function createFlow(req, res) {
   }
 }
 
+function getFlow(req, res) {
+  const flow = req.currentFlow;
+  res.status(200);
+  res.json({
+    id: flow.id,
+    name: flow.name,
+    nodes: flow.nodes,
+    enabled: flow.enabled,
+  });
+}
+
 async function updateFlow(req, res) {
   try {
-    const flow = await Flow.findByPk(req.params.id);
-    if (!flow || flow.userId !== req.currentUser.id) {
-      res.status(404);
-      res.json({ result: 'error', message: 'Not found.' });
+    const flow = req.currentFlow;
+    if (flow.enabled) {
+      res.status(400);
+      res.json({ result: 'error', message: 'Cannot update an enabled flow' });
       return;
     }
     // TODO: validate nodes
     flow.nodes = req.body.nodes;
     await flow.save();
+    res.status(200);
+    res.json({
+      id: flow.id,
+      name: flow.name,
+      nodes: flow.nodes,
+      enabled: flow.enabled,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500);
+    res.json({ result: 'error', message: 'Internal server error' });
+  }
+}
+
+async function deleteFlow(req, res) {
+  try {
+    const flow = req.currentFlow;
+    if (flow.enabled) {
+      res.status(400);
+      res.json({ result: 'error', message: 'Cannot delete an enabled flow.' });
+      return;
+    }
+    await flow.destroy();
     res.status(200);
     res.json({
       id: flow.id,
@@ -89,7 +103,29 @@ async function updateFlow(req, res) {
   }
 }
 
+async function toggleFlow(req, res) {
+  try {
+    const flow = req.currentFlow;
+    // TODO: validate nodes
+    // TODO: setup trigger to enable flow
+    flow.enabled = req.body.enabled;
+    await flow.save();
+    res.status(200);
+    res.json({
+      id: flow.id,
+      name: flow.name,
+      enabled: flow.enabled,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500);
+    res.json({ result: 'error', message: 'Internal server error' });
+  }
+}
+
 exports.getFlows = getFlows;
 exports.updateFlow = updateFlow;
 exports.getFlow = getFlow;
 exports.createFlow = createFlow;
+exports.deleteFlow = deleteFlow;
+exports.toggleFlow = toggleFlow;

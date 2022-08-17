@@ -6,6 +6,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 const { checkAuth } = require('./middlewares/auth');
+const { getFlow } = require('./middlewares/flow');
 
 const authorizationRouter = require('./routers/authorize');
 const homeRouter = require('./routers/home');
@@ -26,8 +27,10 @@ app.get('/oauth/callback', authorizationRouter.authCallBack);
 
 app.get('/users/me', checkAuth, userRouter.userInfo);
 
-app.put('/flows/:id', checkAuth, flowRouter.updateFlow);
-app.get('/flows/:id', checkAuth, flowRouter.getFlow);
+app.post('/flows/:id/toggle', checkAuth, getFlow, flowRouter.toggleFlow);
+app.put('/flows/:id', checkAuth, getFlow, flowRouter.updateFlow);
+app.get('/flows/:id', checkAuth, getFlow, flowRouter.getFlow);
+app.delete('/flows/:id', checkAuth, getFlow, flowRouter.deleteFlow);
 app.get('/flows', checkAuth, flowRouter.getFlows);
 app.post('/flows', checkAuth, flowRouter.createFlow);
 

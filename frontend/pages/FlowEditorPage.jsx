@@ -174,11 +174,9 @@ export function FlowEditorPage({
 
   const onEditNode = useCallback((e, node) => {
     if (
-      (
-        node.type === 'trigger' ||
-        node.type === 'action'
-      ) &&
-      node.data.nextNodes && node.data.nextNodes.length > 0
+      node.type === 'trigger' &&
+      node.data.nextNodes &&
+      node.data.nextNodes.filter(id => id.indexOf('blank-') === -1).length > 0
     ) {
       alertMessage({
         message: 'Cannot edit a node with following nodes.',

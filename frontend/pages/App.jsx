@@ -33,14 +33,14 @@ export function App({
           client.logout();
         }}
       />
-      <Content>
-        <Menu navigate={navigate} location={location} />
-        <MainContent>
-          <RcLoading loading={loading}>
+      <RcLoading loading={loading}>
+        <Content>
+          <Menu navigate={navigate} location={location} />
+          <MainContent>
             <Outlet />
-          </RcLoading>
-        </MainContent>
-      </Content>
+          </MainContent>
+        </Content>
+      </RcLoading>
     </Container>
   );
 }
