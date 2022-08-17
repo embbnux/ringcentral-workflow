@@ -8,7 +8,7 @@ import {
   RcSwitch,
 } from '@ringcentral/juno';
 import { styled } from '@ringcentral/juno/foundation';
-import { Edit, Delete } from '@ringcentral/juno-icon';
+import { Edit, Delete, ViewBorder } from '@ringcentral/juno-icon';
 
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -30,29 +30,27 @@ function FlowItem({
     >
       <RcListItemText primary={flow.name} />
       <RcListItemSecondaryAction>
+        <RcIconButton
+          symbol={flow.enabled ? ViewBorder : Edit}
+          size="small"
+          onClick={onEdit}
+        />
+        {
+          !flow.enabled && (
+            <RcIconButton
+              symbol={Delete}
+              size="small"
+              onClick={() => setConfirmDialogOpen(true)}
+              color="danger.b04"
+            />
+          )
+        }
         <RcSwitch
           checked={flow.enabled}
           onChange={(e, checked) => {
             onToggle(checked);
           }}
         />
-        {
-          !flow.enabled && (
-            <>
-              <RcIconButton
-                symbol={Edit}
-                size="small"
-                onClick={onEdit}
-              />
-              <RcIconButton
-                symbol={Delete}
-                size="small"
-                onClick={() => setConfirmDialogOpen(true)}
-                color="danger.b04"
-              />
-            </>
-          )
-        }
       </RcListItemSecondaryAction>
       <ConfirmDialog
         open={confirmDialogOpen}

@@ -79,6 +79,7 @@ export function FlowEditorPage({
   const [addButtonMenuOpen, setAddButtonMenuOpen] = useState(false);
   const { id: flowId } = useParams();
   const [flowName, setFlowName] = useState('');
+  const [flowEnabled, setFlowEnabled] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [flowNodes, setFlowNodes] = useState([]);
   const [triggerDialogOpen, setTriggerDialogOpen] = useState(false);
@@ -129,9 +130,11 @@ export function FlowEditorPage({
         if (flowId === 'new') {
           setFlowName('Untitled Flow');
           setTriggerDialogOpen(true);
+          setFlowEnabled(false);
         } else {
           const flow = await client.getFlow(flowId);
           setFlowName(flow.name);
+          setFlowEnabled(flow.enabled);
           setFlowNodes(flow.nodes.map((node) => {
             if (node.type === 'blank') {
               return {
@@ -241,6 +244,7 @@ export function FlowEditorPage({
                 onClick={() => {
                   setIsEditingName(true);
                 }}
+                disabled={flowEnabled}
               />
             )
           }
@@ -252,6 +256,7 @@ export function FlowEditorPage({
           onClick={() => {
             setAddButtonMenuOpen(true);
           }}
+          disabled={flowEnabled}
         >
           Add node
         </Button>
@@ -301,6 +306,7 @@ export function FlowEditorPage({
           </RcMenuItem>
         </RcMenu>
         <Button
+          disabled={flowEnabled}
           onClick={async () => {
             try {
               setLoading(true);
