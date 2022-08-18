@@ -20,15 +20,20 @@ module.exports = {
     {
       id: 'fromPhoneNumber',
       name: ' From Phone Number',
-      type: 'string',
+      type: 'option',
+      options: [],
     },
   ],
+  shouldFetchOptions: true,
   returnData: [
     {
       name: 'success',
       type: 'boolean',
     },
   ],
+  getParamsOptions: async () => {
+    
+  },
   action: async ({
     user,
     params,

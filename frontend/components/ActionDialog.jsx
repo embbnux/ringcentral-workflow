@@ -72,14 +72,30 @@ function ParamInput({
         ) : null
       }
       {
-        param.type === 'text' ? (
+        (param.type === 'text' || param.type === 'json') ? (
           <ParamTextarea
             value={value}
             onChange={onChange}
             minRows={2}
           />
         ) : null
-      } 
+      }
+      {
+        param.type === 'option' ? (
+          <Select
+            value={value}
+            onChange={onChange}
+          >
+            {
+              param.options.map(item => (
+                <RcMenuItem key={item.id} value={item.id}>
+                  {item.name}
+                </RcMenuItem>
+              ))
+            }
+          </Select>
+        ) : null
+      }
     </ParamInputLine>
   );
 }
@@ -185,7 +201,10 @@ export function ActionDialog({
           <Label color="neutral.f06" variant="body2">Type</Label>
           <Select
             value={type}
-            onChange={(e) => setType(e.target.value)}
+            onChange={(e) => {
+              setType(e.target.value);
+              setParamValues({});
+            }}
             placeholder="Select action type"
           >
             {
