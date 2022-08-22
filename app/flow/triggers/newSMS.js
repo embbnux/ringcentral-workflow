@@ -23,12 +23,13 @@ module.exports = {
       testData: '2020-01-01T00:00:00.000Z',
     },
   ],
-  canHandle: (event) => {
+  canHandle: ({ user, event }) => {
+    const normalizedEventFilter = event.event.replace(user.accountId, '~').replace(user.id, '~');
     return (
-      event.event === '/restapi/v1.0/account/~/extension/~/message-store/instant?type=SMS'
+      normalizedEventFilter === '/restapi/v1.0/account/~/extension/~/message-store/instant?type=SMS'
     );
   },
-  dataHandler: (event) => {
+  dataHandler: ({ event }) => {
     return {
       from: event.body.from.phoneNumber,
       subject: event.body.subject,

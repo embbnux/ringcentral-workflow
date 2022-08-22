@@ -29,13 +29,14 @@ module.exports = {
       testData: '2020-01-01T00:00:00.000Z',
     },
   ],
-  canHandle: (event) => {
+  canHandle: ({ user, event }) => {
     return (
       event.event === '/restapi/v1.0/glip/posts' &&
-      event.body.eventType === 'PostAdded'
+      event.body.eventType === 'PostAdded' &&
+      event.body.creatorId !== user.id
     );
   },
-  dataHandler: (event) => {
+  dataHandler: ({ event }) => {
     return {
       groupId: event.body.groupId,
       text: event.body.text,

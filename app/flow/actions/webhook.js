@@ -44,7 +44,7 @@ module.exports = {
       type: 'boolean',
     },
   ],
-  action: async ({
+  handler: async ({
     params,
   }) => {
     try {

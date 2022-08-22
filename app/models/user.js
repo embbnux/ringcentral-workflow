@@ -6,6 +6,9 @@ const User = sequelize.define('users', {
     type: Sequelize.STRING,
     primaryKey: true,
   },
+  accountId: {
+    type: Sequelize.STRING,
+  },
   token: {
     type: Sequelize.JSON,
   },

@@ -20,7 +20,7 @@ module.exports = {
     {
       id: 'fromPhoneNumber',
       name: ' From Phone Number',
-      type: 'option',
+      type: 'string',
       options: [],
     },
   ],
@@ -34,7 +34,7 @@ module.exports = {
   getParamsOptions: async () => {
     
   },
-  action: async ({
+  handler: async ({
     user,
     params,
   }) => {

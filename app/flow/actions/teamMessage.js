@@ -27,7 +27,7 @@ module.exports = {
   // getParamsOptions: async () => {
 
   // },
-  action: async ({
+  handler: async ({
     user,
     params,
   }) => {

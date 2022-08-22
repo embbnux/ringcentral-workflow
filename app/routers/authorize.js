@@ -29,6 +29,7 @@ async function authCallBack(req, res) {
     if (!user) {
       await User.create({
         id: token.owner_id,
+        accountId: extensionInfo.account.id,
         token,
         name: extensionInfo.name,
       });
