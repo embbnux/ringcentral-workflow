@@ -20,19 +20,38 @@ module.exports = {
     {
       id: 'fromPhoneNumber',
       name: ' From Phone Number',
-      type: 'string',
+      type: 'option',
       options: [],
+      remote: true,
+      remoteOptionKey: 'fromPhoneNumbers',
     },
   ],
-  shouldFetchOptions: true,
   returnData: [
     {
       name: 'success',
       type: 'boolean',
     },
   ],
-  getParamsOptions: async () => {
-    
+  getParamsOptions: async ({ user }) => {
+    const rcSDK = new RingCentral(RINGCENTRAL_OPTIONS);
+    try {
+      const response = await rcSDK.request({
+        path: '/restapi/v1.0/account/~/extension/~/phone-number',
+        method: 'GET',
+      }, user.token);
+      const data = await response.json();
+      const fromPhoneNumbers = data.records.filter((number) => {
+        return number.features.indexOf('SmsSender') > -1
+      }).map((number) => ({
+        value: number.phoneNumber,
+        name: number.phoneNumber,
+      }));
+      return {
+        fromPhoneNumbers,
+      }
+    } catch (e) {
+      return {};
+    }
   },
   handler: async ({
     user,

@@ -10,11 +10,11 @@ import {
   RcMenuItem,
   RcTypography,
   RcIconButton,
-  RcTextField,
-  RcTextarea,
+  RcLoading,
 } from '@ringcentral/juno';
 import { Close } from '@ringcentral/juno-icon';
 import { ParentNodeInput } from './ParentNodeInput';
+import { ActionParamsInput } from './ActionParamsInput';
 
 const InputLine = styled.div`
   display: flex;
@@ -37,103 +37,6 @@ const CloseButton = styled(RcIconButton)`
   top: 0;
 `;
 
-const ParamLabel = styled(RcTypography)`
-  margin-right: 10px;
-  min-width: 150px;
-`;
-
-const ParamInputLine = styled(InputLine)`
-  margin: 10px 0;
-  align-items: baseline;
-`;
-
-const ParamTextarea = styled(RcTextarea)`
-  flex: 1;
-`;
-
-const ParamTextField = styled(RcTextField)`
-  flex: 1;
-`;
-
-function ParamInput({
-  param,
-  value,
-  onChange,
-}) {
-  return (
-    <ParamInputLine>
-      <ParamLabel color="neutral.f06" variant="body1">{param.name}</ParamLabel>
-      {
-        param.type === 'string' ? (
-          <ParamTextField
-            value={value}
-            onChange={onChange}
-          />
-        ) : null
-      }
-      {
-        (param.type === 'text' || param.type === 'json') ? (
-          <ParamTextarea
-            value={value}
-            onChange={onChange}
-            minRows={2}
-          />
-        ) : null
-      }
-      {
-        param.type === 'option' ? (
-          <Select
-            value={value}
-            onChange={onChange}
-          >
-            {
-              param.options.map(item => (
-                <RcMenuItem key={item.id} value={item.id}>
-                  {item.name}
-                </RcMenuItem>
-              ))
-            }
-          </Select>
-        ) : null
-      }
-    </ParamInputLine>
-  );
-}
-
-const ParamsInputWrapper = styled.div`
-  margin-top: 20px;
-`;
-
-function ActionParamsInput({
-  action,
-  values,
-  setValues,
-}) {
-  if (!action) {
-    return null;
-  }
-  return (
-    <ParamsInputWrapper>
-      <Label color="neutral.f06" variant="body2">Action params</Label>
-      {
-        action.params.map(param => (
-          <ParamInput
-            key={param.id}
-            param={param}
-            value={values[param.id] || ''}
-            onChange={(e) => {
-              setValues({
-                ...values,
-                [param.id]: e.target.value,
-              });
-            }}
-          />
-        ))
-      }
-    </ParamsInputWrapper>
-  );
-}
-
 export function ActionDialog({
   open,
   onClose,
@@ -144,11 +47,14 @@ export function ActionDialog({
   onSave,
   onDelete,
   inputProperties,
+  onLoadParamsOptions,
+  loading,
 }) {
   const [parentNodeId, setParentNodeId] = useState(null);
   const [parentNodeBranch, setParentNodeBranch] = useState('default');
   const [type, setType] = useState('');
   const [paramValues, setParamValues] = useState({});
+  const [remoteParmaOptions, setRemoteParmaOptions] = useState({});
 
   useEffect(() => {
     if (!editingActionNodeId || !open) {
@@ -169,6 +75,24 @@ export function ActionDialog({
     setParentNodeBranch(editingActionNode.data.parentNodeBranch);
     setParamValues(editingActionNode.data.paramValues);
   }, [editingActionNodeId, open, selectedBlankNode]);
+
+  useEffect(() => {
+    const initRemoteParmaOptions = async () => {
+      setRemoteParmaOptions({});
+      if (!type) {
+        return;
+      }
+      const action = actions.find(action => action.id === type);
+      const needToLoadParams = !!action.params.find(param =>
+        param.type === 'option' && param.remote
+      );
+      if (needToLoadParams) {
+        const newParamsOptions = await onLoadParamsOptions(type);
+        setRemoteParmaOptions(newParamsOptions);
+      }
+    };
+    initRemoteParmaOptions();
+  }, [type]);
 
   const action = actions.find(action => action.id === type);
 
@@ -216,12 +140,15 @@ export function ActionDialog({
             }
           </Select>
         </InputLine>
-        <ActionParamsInput
-          action={action}
-          values={paramValues}
-          setValues={setParamValues}
-          inputProperties={inputProperties}
-        />
+        <RcLoading loading={loading}>
+          <ActionParamsInput
+            action={action}
+            values={paramValues}
+            setValues={setParamValues}
+            inputProperties={inputProperties}
+            remoteOptions={remoteParmaOptions}
+          />
+        </RcLoading>
       </RcDialogContent>
       <RcDialogActions>
         {

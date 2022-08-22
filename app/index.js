@@ -38,6 +38,7 @@ app.post('/flows', checkAuth, flowRouter.createFlow);
 app.get('/flow-editor/triggers', checkAuth, flowEditorRouter.getTriggers);
 app.get('/flow-editor/conditions', checkAuth, flowEditorRouter.getConditions);
 app.get('/flow-editor/actions', checkAuth, flowEditorRouter.getActions);
+app.get('/flow-editor/actions/:actionId/params-options', checkAuth, flowEditorRouter.getActionParamsOptions);
 
 app.post('/webhooks/:id', webhookRouter.webhookTrigger);
 

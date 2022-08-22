@@ -74,6 +74,7 @@ export function FlowEditorPage({
   client,
   alertMessage,
   setLoading,
+  loading,
 }) {
   const addButtonRef = useRef(null);
   const [addButtonMenuOpen, setAddButtonMenuOpen] = useState(false);
@@ -547,6 +548,7 @@ export function FlowEditorPage({
         onClose={() => {
           setActionDialogOpen(false);
         }}
+        loading={loading}
         actions={actions}
         selectedBlankNode={selectedBlankNode}
         editingActionNodeId={editingActionNodeId}
@@ -641,6 +643,22 @@ export function FlowEditorPage({
           ]);
           setActionDialogOpen(false);
           setEditingActionNodeId(null);
+        }}
+        onLoadParamsOptions={async (type) => {
+          try {
+            setLoading(true);
+            const options = await client.getActionParamsOptions(type);
+            setLoading(false);
+            return options;
+          } catch (e) {
+            console.error(e);
+            setLoading(false);
+            alertMessage({
+              message: 'Failed to load param options',
+              type: 'error',
+            });
+            return {};
+          }
         }}
       />
     </Container>

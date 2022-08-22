@@ -15,10 +15,10 @@ module.exports = {
       name: 'Method',
       type: 'option',
       options: [{
-        id: 'GET',
+        value: 'GET',
         name: 'GET',
       }, {
-        id: 'POST',
+        value: 'POST',
         name: 'POST',
       }],
     },

@@ -60,6 +60,11 @@ export class Client extends EventEmitter {
     return actions;
   }
 
+  async getActionParamsOptions(actionId) {
+    const options = await this._request(`/flow-editor/actions/${actionId}/params-options`);
+    return options;
+  }
+
   async _request(path, method = 'GET', body = null) {
     const response = await fetch(path, {
       method,

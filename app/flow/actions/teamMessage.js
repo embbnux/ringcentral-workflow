@@ -14,7 +14,7 @@ module.exports = {
     },
     {
       id: 'conversationId',
-      name: 'Conversation Id',
+      name: 'Conversation ID',
       type: 'string',
     },
   ],
@@ -24,9 +24,6 @@ module.exports = {
       type: 'boolean',
     },
   ],
-  // getParamsOptions: async () => {
-
-  // },
   handler: async ({
     user,
     params,
