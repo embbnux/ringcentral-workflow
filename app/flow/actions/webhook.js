@@ -28,14 +28,19 @@ module.exports = {
       type: 'json',
     },
     {
-      id: 'headerKey0',
-      name: 'Header Key',
-      type: 'string',
-    },
-    {
-      id: 'headerKey0',
-      name: 'Header Value',
-      type: 'string',
+      id: 'headers',
+      name: 'Headers',
+      type: 'keyValue',
+      keyProperty: {
+        id: 'key',
+        type: 'string',
+        name: 'Header Key',
+      },
+      valueProperty: {
+        id: 'key',
+        type: 'string',
+        name: 'Header Value',
+      }
     },
   ],
   returnData: [
