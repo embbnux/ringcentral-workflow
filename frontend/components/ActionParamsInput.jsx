@@ -9,6 +9,7 @@ import {
   RcIconButton,
 } from '@ringcentral/juno';
 import { Add, Delete } from '@ringcentral/juno-icon';
+import { TextInputWithSuggestion } from './TextInputWithSuggestion';
 
 const InputLine = styled.div`
   display: flex;
@@ -72,20 +73,19 @@ function ParmaOptionSelect({
 function NormalTypeParamInput({
   param,
   value,
-  onChange,
+  setValue,
   remoteOptions,
+  suggestions,
 }) {
-  const onChangeEvent = (e) => {
-    onChange(e.target.value);
-  };
   return (
     <ParamInputLine>
       <ParamLabel color="neutral.f06" variant="body1">{param.name}</ParamLabel>
       {
         param.type === 'string' ? (
-          <ParamTextField
+          <TextInputWithSuggestion
             value={value}
-            onChange={onChangeEvent}
+            setValue={setValue}
+            suggestions={suggestions}
           />
         ) : null
       }
@@ -93,7 +93,9 @@ function NormalTypeParamInput({
         (param.type === 'text' || param.type === 'json') ? (
           <ParamTextarea
             value={value}
-            onChange={onChangeEvent}
+            onChange={(e) => {
+              setValue(e.target.value);
+            }}
             minRows={2}
           />
         ) : null
@@ -103,7 +105,9 @@ function NormalTypeParamInput({
           <ParmaOptionSelect
             param={param}
             value={value}
-            onChange={onChangeEvent}
+            onChange={(e) => {
+              setValue(e.target.value);
+            }}
             remoteOptions={remoteOptions}
           /> 
         ) : null
@@ -171,7 +175,7 @@ function KeyValuePairInput({
 function KeyValueParamInput({
   param,
   value = {},
-  onChange,
+  setValue,
 }) {
   return (
     <>
@@ -181,7 +185,7 @@ function KeyValueParamInput({
           symbol={Add}
           size="small"
           onClick={() => {
-            onChange({
+            setValue({
               ...value,
               [`Key_${Object.keys(value).length + 1}_${Math.floor(Math.random() * 10)}`]: '',
             });
@@ -197,7 +201,7 @@ function KeyValueParamInput({
             valueProperty={param.valueProperty}
             keyProperty={param.keyProperty}
             onPropertyValueChange={(e) => {
-              onChange({
+              setValue({
                 ...value,
                 [key]: e.target.value,
               });
@@ -213,7 +217,7 @@ function KeyValueParamInput({
                 newValue[e.target.value] = value[key];
               }
               delete newValue[key];
-              onChange(newValue);
+              setValue(newValue);
             }}
           />
         ))
@@ -225,15 +229,16 @@ function KeyValueParamInput({
 function ParamInput({
   param,
   value,
-  onChange,
+  setValue,
   remoteOptions,
+  suggestions,
 }) {
   if (param.type === 'keyValue') {
     return (
       <KeyValueParamInput
         param={param}
         value={value}
-        onChange={onChange}
+        setValue={setValue}
         remoteOptions={remoteOptions}
       />
     );
@@ -242,8 +247,9 @@ function ParamInput({
     <NormalTypeParamInput
       param={param}
       value={value}
-      onChange={onChange}
+      setValue={setValue}
       remoteOptions={remoteOptions}
+      suggestions={suggestions}
     />
   );
 }
@@ -252,11 +258,19 @@ const ParamsInputWrapper = styled.div`
   margin-top: 20px;
 `;
 
+function checkInputType(inputType, paramType) {
+  if (inputType === 'string') {
+    return paramType === 'string' || paramType === 'text';
+  }
+  return inputType === paramType;
+}
+
 export function ActionParamsInput({
   action,
   values,
   setValues,
   remoteOptions,
+  inputProperties,
 }) {
   if (!action) {
     return null;
@@ -265,20 +279,30 @@ export function ActionParamsInput({
     <ParamsInputWrapper>
       <Label color="neutral.f06" variant="body2">Action params</Label>
       {
-        action.params.map(param => (
-          <ParamInput
-            key={param.id}
-            param={param}
-            value={values[param.id] || ''}
-            onChange={(newValue) => {
-              setValues({
-                ...values,
-                [param.id]: newValue,
-              });
-            }}
-            remoteOptions={remoteOptions}
-          />
-        ))
+        action.params.map((param) => {
+          return (
+            <ParamInput
+              key={param.id}
+              param={param}
+              value={values[param.id] || ''}
+              setValue={(newValue) => {
+                setValues({
+                  ...values,
+                  [param.id]: newValue,
+                });
+              }}
+              remoteOptions={remoteOptions}
+              suggestions={
+                inputProperties
+                  .filter((item) => checkInputType(item.type, param.type))
+                  .map((item) => ({
+                    id: item.id,
+                    label: item.name,
+                  }))
+              }
+            />
+          );
+        })
       }
     </ParamsInputWrapper>
   );

@@ -6,19 +6,19 @@ module.exports = {
   outputData: [
     {
       id: 'from',
-      name: 'From Number',
+      name: 'New SMS: From Number',
       type: 'string',
       testData: '+1234567890',
     },
     {
       id: 'subject',
-      name: 'Message text',
+      name: 'New SMS: Message text',
       type: 'string',
       testData: 'Hello, this is new message',
     },
     {
       id: 'creationTime',
-      name: 'Creation Time',
+      name: 'New SMS: Creation Time',
       type: 'date',
       testData: '2020-01-01T00:00:00.000Z',
     },

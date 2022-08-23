@@ -6,25 +6,25 @@ module.exports = {
   outputData: [
     {
       id: 'groupId',
-      name: 'Conversation ID',
+      name: 'New Message: Conversation ID',
       type: 'string',
       testData: '995723345922',
     },
     {
       id: 'text',
-      name: 'Message text',
+      name: 'New Message: Message text',
       type: 'string',
       testData: 'Hello, World :)',
     },
     {
       id: 'mentionMe',
-      name: 'Mention me',
+      name: 'New Message: Mention me',
       type: 'boolean',
       testData: true,
     },
     {
       id: 'creationTime',
-      name: 'Creation Time',
+      name: 'New Message: Creation Time',
       type: 'date',
       testData: '2020-01-01T00:00:00.000Z',
     },

@@ -39,8 +39,8 @@ const Label = styled(RcTypography)`
 `;
 
 const RuleSelect = styled(RcSelect)`
-  min-width: 150px;
-  margin-right: 20px;
+  min-width: 200px;
+  margin-right: 10px;
 `;
 
 const RuleValue = styled(RcTextField)`
