@@ -9,6 +9,7 @@ module.exports = {
       id: 'url',
       name: 'URL',
       type: 'string',
+      validator: 'https?://.+',
     },
     {
       id: 'method',
@@ -20,6 +21,22 @@ module.exports = {
       }, {
         value: 'POST',
         name: 'POST',
+      }],
+    },
+    {
+      id: 'format',
+      name: 'Format',
+      type: 'option',
+      options: [{
+        value: 'json',
+        name: 'JSON',
+      }, {
+        value: 'form-url-encoded',
+        name: 'Form URL-Encoded',
+      },
+      {
+        value: 'text',
+        name: 'Plain Text',
       }],
     },
     {
@@ -52,20 +69,23 @@ module.exports = {
   handler: async ({
     params,
   }) => {
+    const contentTypeMap = {
+      'json': 'application/json',
+      'form-url-encoded': 'application/x-www-form-urlencoded',
+      'text': 'text/plain',
+    };
     try {
       const headers = {
         'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': contentTypeMap[params.format],
+        ...params.headers,
       };
-      if (params.headerKey0) {
-        headers[params.headerKey0] = params.headerValue0;
-      }
       const response = await fetch(
         params.url, {
           method: params.method,
           body: params.body,
           headers,
-        }
+        },
       );
       return {
         success: response.status < 400,

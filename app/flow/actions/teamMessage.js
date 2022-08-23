@@ -11,11 +11,13 @@ module.exports = {
       id: 'messageText',
       name: 'Message Text',
       type: 'text',
+      limitLength: 500,
     },
     {
       id: 'conversationId',
       name: 'Conversation ID',
       type: 'string',
+      validator: '^[0-9]+$',
     },
   ],
   returnData: [

@@ -11,11 +11,13 @@ module.exports = {
       id: 'messageText',
       name: 'Message Text',
       type: 'text',
+      limitLength: 500,
     },
     {
       id: 'toPhoneNumber',
       name: 'To Phone Number',
       type: 'string',
+      validator: '^\+?[1-9]\d{1,14}$',
     },
     {
       id: 'fromPhoneNumber',
