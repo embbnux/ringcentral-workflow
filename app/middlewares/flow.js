@@ -1,4 +1,4 @@
-const { Flow } = require('../models/Flow');
+const { Flow } = require('../models/flow');
 
 async function getFlow(req, res, next) {
   try {

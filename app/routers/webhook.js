@@ -1,6 +1,6 @@
-const { Webhook } = require('../models/Webhook');
-const { User } = require('../models/User');
-const { Flow } = require('../models/Flow');
+const { Webhook } = require('../models/webhook');
+const { User } = require('../models/user');
+const { Flow } = require('../models/flow');
 const { runFlow } = require('../flow/runFlow');
 const { TRIGGERS } = require('../flow/triggers');
 

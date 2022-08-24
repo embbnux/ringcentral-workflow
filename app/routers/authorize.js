@@ -1,5 +1,5 @@
 const { RingCentral } = require('../lib/ringcentral');
-const { User } = require('../models/User');
+const { User } = require('../models/user');
 const { encodeJwt } = require('../lib/jwt');
 const { RINGCENTRAL_OPTIONS } = require('../lib/constants');
 

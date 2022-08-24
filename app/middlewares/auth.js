@@ -1,5 +1,5 @@
 const { decodeJwt } = require('../lib/jwt');
-const { User } = require('../models/User');
+const { User } = require('../models/user');
 
 async function checkAuth(req, res, next) {
   const jwtToken = req.headers['x-access-token'];

@@ -1,8 +1,8 @@
 const { nanoid } = require('nanoid');
 const { RingCentral } = require('../lib/ringcentral');
 const { RINGCENTRAL_OPTIONS, APP_SERVER } = require('../lib/constants');
-const { Flow } = require('../models/Flow');
-const { Webhook } = require('../models/Webhook');
+const { Flow } = require('../models/flow');
+const { Webhook } = require('../models/webhook');
 const { TRIGGERS } = require('../flow/triggers');
 const { checkAndRefreshUserToken } = require('../lib/checkAndRefreshUserToken');
 const { validateFlow, checkFlowIsCompleted } = require('../flow/validateFlow');
