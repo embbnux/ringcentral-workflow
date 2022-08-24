@@ -104,7 +104,7 @@ export function HelpPage() {
         7. Why my workflow is not working
       </Question>
       <RcTypography variant="body1">
-        Workflow will stop working if the workflow is inactive more than 7 days.
+        Workflow will stop working if the workflow is inactive more than 7 days. You need to re-enable it to make it work.
       </RcTypography>
       <SubTitle variant="title2">
         # About RingCentral Labs
