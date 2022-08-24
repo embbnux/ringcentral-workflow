@@ -74,6 +74,19 @@ function validateActionNode({
       });
       continue;
     }
+    if (
+      (param.type === 'string' || param.type === 'text') &&
+      (
+        testParamValue.length === 0 ||
+        testParamValue.trim().length === 0
+      )
+    ) {
+      errors.push({
+        nodeName: node.data.label,
+        message: `Action param ${param.name} is required.`,
+      });
+      continue;
+    }
     if (param.limitLength && testParamValue.length > param.limitLength) {
       errors.push({
         nodeName: node.data.label,
