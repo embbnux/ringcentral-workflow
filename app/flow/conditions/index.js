@@ -51,11 +51,11 @@ const isNotContains = {
 const isBeforeDateTime = {
   id: 'isBeforeDateTime',
   name: 'is before date time',
-  supportTypes: ['date'],
+  supportTypes: ['date', 'dateTime'],
   valueType: 'dateTime',
   handler: (input, value) => {
-    const inputDate = newDate(input);
-    const valueDate = newDate(value);
+    const inputDate = new Date(input);
+    const valueDate = new Date(value);
     return inputDate < valueDate;
   },
 };
@@ -63,11 +63,11 @@ const isBeforeDateTime = {
 const isAfterDateTime = {
   id: 'isAfterDateTime',
   name: 'is after date time',
-  supportTypes: ['date'],
+  supportTypes: ['date', 'dateTime'],
   valueType: 'dateTime',
   handler: (input, value) => {
-    const inputDate = newDate(input);
-    const valueDate = newDate(value);
+    const inputDate = new Date(input);
+    const valueDate = new Date(value);
     return inputDate > valueDate;
   }
 };

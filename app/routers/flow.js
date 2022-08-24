@@ -108,6 +108,7 @@ async function updateFlow(req, res) {
       return;
     }
     flow.nodes = req.body.nodes;
+    flow.name = req.body.name;
     await flow.save();
     res.status(200);
     res.json({

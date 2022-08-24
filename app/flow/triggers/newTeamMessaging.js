@@ -40,7 +40,7 @@ module.exports = {
     return {
       groupId: event.body.groupId,
       text: event.body.text,
-      mentionMe: !!(event.body.mentions && event.body.mentions.indexOf(event.ownerId) > 0),
+      mentionMe: !!(event.body.mentions && event.body.mentions.find(m => m.id === event.ownerId)),
       creationTime: event.body.creationTime,
     }
   },

@@ -15,6 +15,7 @@ import {
 } from '@ringcentral/juno';
 import { Close } from '@ringcentral/juno-icon';
 import { ParentNodeInput } from './ParentNodeInput';
+import { DateTimeInput } from './DateTimeInput';
 
 const InputLine = styled.div`
   display: flex;
@@ -39,13 +40,21 @@ const Label = styled(RcTypography)`
 `;
 
 const RuleSelect = styled(RcSelect)`
-  min-width: 200px;
+  min-width: 170px;
   margin-right: 10px;
+`;
+
+const RuleInputSelect = styled(RuleSelect)`
+  min-width: 200px;
 `;
 
 const RuleValue = styled(RcTextField)`
   min-width: 150px;
   margin-top: 5px;
+`;
+
+const RuleInputLine = styled(InputLine)`
+  align-items: end;
 `;
 
 function RuleInput({
@@ -59,9 +68,12 @@ function RuleInput({
   const conditionOptions = conditions.filter((condition) => {
     return condition.supportTypes.indexOf(propertyType) > -1;
   });
+  const condition = conditions.find(c => c.id === rule.condition);
+  const valueType = condition ? condition.valueType : '';
+
   return (
-    <InputLine>
-      <RuleSelect
+    <RuleInputLine>
+      <RuleInputSelect
         value={rule.input}
         variant="outlined"
         onChange={(e) => {
@@ -80,7 +92,7 @@ function RuleInput({
             </RcMenuItem>
           ))
         }
-      </RuleSelect>
+      </RuleInputSelect>
       <RuleSelect
         value={rule.condition}
         variant="outlined"
@@ -96,19 +108,35 @@ function RuleInput({
           })
         }
       </RuleSelect>
-      <RuleValue
-        value={rule.value}
-        variant="outlined"
-        onChange={(e) => onUpdateRule({ ...rule, value: e.target.value })}
-      />
-    </InputLine>
+      {
+        valueType === 'dateTime' ? (
+          <DateTimeInput
+            dateTime={typeof rule.value === 'string' ? new Date(rule.value) : rule.value}
+            onDateTimeChange={(dateTime) => onUpdateRule({ ...rule, value: dateTime })}
+          />
+        ) : null
+      }
+      {
+        valueType === 'string' ? (
+          <RuleValue
+            value={rule.value}
+            variant="outlined"
+            onChange={(e) => onUpdateRule({ ...rule, value: e.target.value })}
+          />
+        ) : null
+      }
+    </RuleInputLine>
   );
 }
 
 function getConditionDescription(rule, inputProperties, conditions) {
   const selectedProperty = inputProperties.find(p => p.id === rule.input);
   const condition = conditions.find(c => c.id === rule.condition);
-  return `${selectedProperty.name} ${condition.name} ${rule.value}`;
+  let value = rule.value;
+  if (value instanceof Date) {
+    value = value.toLocaleString();
+  }
+  return `${selectedProperty.name} ${condition.name} ${value}`;
 }
 
 export function ConditionDialog({
