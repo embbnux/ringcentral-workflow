@@ -11,7 +11,7 @@
     "init-db": "node scripts/init-db.js",
     "webpack-server": "webpack serve --config webpack-dev-server.config.js",
     "webpack-build": "NODE_ENV=production webpack build --config webpack-production.config.js",
-    "postinstall": "npm run init-db && npm run webpack-build"
+    "postinstall": "npm run webpack-build && npm run init-db"
   },
   "dependencies": {
     "body-parser": "^1.20.0",
