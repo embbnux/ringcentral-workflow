@@ -44,6 +44,10 @@ app.post('/webhooks/:id', webhookRouter.webhookTrigger);
 
 app.get('/', homeRouter.home);
 
+if (process.env.SERVING_STATIC_FILES) {
+  app.use(express.static(path.resolve(__dirname, '../public')));
+}
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 });
