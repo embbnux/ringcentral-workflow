@@ -5,7 +5,7 @@ module.exports = {
   eventFilter: '/restapi/v1.0/account/~/extension/~/message-store/instant?type=SMS',
   outputData: [
     {
-      id: 'from',
+      id: 'fromNumber',
       name: 'New SMS: From Number',
       type: 'string',
       testData: '+1234567890',
@@ -31,7 +31,7 @@ module.exports = {
   },
   dataHandler: ({ event }) => {
     return {
-      from: event.body.from.phoneNumber,
+      fromNumber: event.body.from.phoneNumber,
       subject: event.body.subject,
       creationTime: event.body.creationTime,
     }

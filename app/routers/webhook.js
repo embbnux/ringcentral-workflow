@@ -1,7 +1,7 @@
 const { Webhook } = require('../models/Webhook');
 const { User } = require('../models/User');
 const { Flow } = require('../models/Flow');
-const { runFlow } = require('../lib/runFlow');
+const { runFlow } = require('../flow/runFlow');
 const { TRIGGERS } = require('../flow/triggers');
 
 function triggerFlows(user, event, flows) {

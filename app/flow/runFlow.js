@@ -1,5 +1,6 @@
-const { CONDITIONS  } = require('../flow/conditions');
-const { ACTIONS } = require('../flow/actions');
+const { CONDITIONS  } = require('./conditions');
+const { ACTIONS } = require('./actions');
+const stringTemplate = require('string-template');
 
 function runConditionNode({
   conditionNode,
@@ -12,12 +13,27 @@ function runConditionNode({
   return conditionResult;
 }
 
+function formatParams(params, inputs) {
+  const formattedParams = {};
+  Object.keys(params).forEach((key) => {
+    if (typeof params[key] === 'string') {
+      formattedParams[key] = stringTemplate(params[key], inputs);
+    } else if (typeof params[key] === 'object') {
+      formattedParams[key] = formatParams(params[key], inputs);
+    } else {
+      formattedParams[key] = params[key];
+    }
+  });
+  return formattedParams;
+}
+
 function runActionNode({
   user,
   actionNode,
+  inputs,
 }) {
   const action = ACTIONS.find(a => a.id === actionNode.data.type);
-  const params = actionNode.data.paramValues;
+  const params = formatParams(actionNode.data.paramValues, inputs);
   return action.handler({
     user,
     params,
@@ -67,6 +83,7 @@ async function runNode({
     await runActionNode({
       user,
       actionNode: node,
+      inputs,
     });
   }
 }
