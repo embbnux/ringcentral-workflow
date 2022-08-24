@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { styled, palette2, setOpacity, shadows } from '@ringcentral/juno/foundation';
 import ReactQuill, { Quill } from 'react-quill';
 import QuillMention from 'quill-mention';
@@ -8,36 +8,19 @@ import 'quill-mention/dist/quill.mention.css';
 
 Quill.register('modules/mentions', QuillMention)
 
-const suggestions = [
-  { id: "fromNumber", value: "From Number" },
-  { id: "toNumber", value: "To Number" }
-];
-
 const templateMatchRegExp = /{[^}]+}/;
-
-const modules = {
-  toolbar: false,
-  mention: {
-    allowedChars: /^[a-zA-Z0-9_\s]*$/,
-    mentionDenotationChars: ["#", "{"],
-    source: function(searchTerm, renderList) {
-      if (searchTerm.length === 0) {
-        renderList(suggestions, searchTerm);
-      } else {
-        const matches = suggestions.filter((suggestion) => {
-          return suggestion.value.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1;
-        });
-        renderList(matches, searchTerm);
-      }
-    }
-  }
-}
 
 const QuillEditorWrapper = styled.div`
   flex: 1;
 
-  .ql-container.ql-snow {
-    border: none;
+  .ql-container {
+    font-family: Lato, Helvetica, Arial, sans-serif;
+    color: ${palette2('neutral', 'f06')};
+    font-size: 0.88rem;
+
+    &.ql-snow {
+      border: none;
+    }
   }
 
   .ql-editor {
@@ -92,7 +75,7 @@ function getTextFromDelta(delta) {
     if (typeof op.insert === 'string') {
       return `${text}${op.insert}`;
     }
-    if (typeof op.insert === 'object' && op.insert.mention && op.insert.mention.value) {
+    if (typeof op.insert === 'object' && op.insert.mention) {
       return `${text}{${op.insert.mention.id}}`;
     }
     return text;
@@ -121,7 +104,7 @@ function getDeltaFromText(text, suggestions) {
     } else {
       const mentionObject = {
         id: mentionId,
-        value: mentionItem.value,
+        value: mentionItem.name,
         denotationChar: '#',
         index: `${mentionIndex}`,
       };
@@ -140,8 +123,35 @@ function getDeltaFromText(text, suggestions) {
 export function TemplateTextEditor({
   value,
   setValue,
+  suggestions,
 }) {
   const [deltaValue, setDeltaValue] = useState(getDeltaFromText(value, suggestions));
+  const suggestionsRef = useRef(suggestions);
+
+  useEffect(() => {
+    suggestionsRef.current = suggestions;
+  }, [suggestions])
+  const modules = useMemo(() => ({
+    toolbar: false,
+    mention: {
+      allowedChars: /^[a-zA-Z0-9_\s]*$/,
+      mentionDenotationChars: ["#", "{"],
+      source: function(searchTerm, renderList) {
+        const options = suggestionsRef.current.map((item) => ({
+          id: item.id,
+          value: item.name,
+        }));
+        if (searchTerm.length === 0) {
+          renderList(options, searchTerm);
+        } else {
+          const matches = options.filter((suggestion) => {
+            return suggestion.value.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1;
+          });
+          renderList(matches, searchTerm);
+        }
+      }
+    }
+  }), []);
 
   return (
     <QuillEditorWrapper>

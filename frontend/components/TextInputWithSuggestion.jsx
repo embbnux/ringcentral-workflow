@@ -35,7 +35,10 @@ export function TextInputWithSuggestion({
 
   return (
     <StyledDownshift
-      options={suggestions}
+      options={suggestions.map((item) => ({
+        id: item.id,
+        label: item.name,
+      }))}
       value={downshiftValue}
       onChange={(newItems) => {
         setDownshiftValue(newItems);

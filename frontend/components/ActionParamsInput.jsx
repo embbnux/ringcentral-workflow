@@ -95,6 +95,7 @@ function NormalTypeParamInput({
           <TemplateTextEditor
             value={value}
             setValue={setValue}
+            suggestions={suggestions}
           />
         ) : null
       }
@@ -304,10 +305,6 @@ export function ActionParamsInput({
               suggestions={
                 inputProperties
                   .filter((item) => checkInputType(item.type, param.type))
-                  .map((item) => ({
-                    id: item.id,
-                    label: item.name,
-                  }))
               }
             />
           );
