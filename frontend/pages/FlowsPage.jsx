@@ -93,6 +93,11 @@ export function FlowsPage({
           } catch (e) {
             console.error(e);
             setLoading(false);
+            if (e.response) {
+              const errorData = await e.response.json();
+              alertMessage({ type: 'error', message: errorData.message });
+              return;
+            }
             alertMessage({ type: 'error', message: 'Failed to toggle flow' });
           }
         }}

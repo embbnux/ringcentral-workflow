@@ -79,7 +79,9 @@ export class Client extends EventEmitter {
       throw new Error('Session expired!');
     }
     if (response.status !== 200) {
-      throw new Error('Fetch data error please retry later');
+      const error =  new Error('Fetch data error please retry later');
+      error.response = response;
+      throw error;
     }
     return response.json();
   }

@@ -20,6 +20,7 @@ module.exports = {
       options: [],
       remote: true,
       remoteOptionKey: 'fromPhoneNumbers',
+      validator: '^\\+[1-9]\\d{1,14}$',
     },
     {
       id: 'toPhoneNumbers',
@@ -30,9 +31,10 @@ module.exports = {
         id: 'phoneNumber',
         name: 'Phone Number',
         type: 'string',
-        validator: '^\+?[1-9]\d{1,14}$',
+        validator: '^\\+[1-9]\\d{1,14}$',
       }],
       limitLength: 10,
+      required: true,
     },
   ],
   returnData: [

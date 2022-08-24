@@ -337,6 +337,28 @@ export function FlowEditorPage({
               alertMessage({ message: 'Flow saved successfully', type: 'success' });
             } catch (e) {
               console.error(e);
+              setLoading(false);
+              if (e.response) {
+                const errorData = await e.response.json();
+                if (errorData.errors) {
+                  alertMessage({
+                    message: errorData.errors.map((error) => {
+                      if (error.nodeName) {
+                        return `${error.nodeName}: ${error.message}`;
+                      }
+                      return error.message;
+                    }).join('\n'),
+                    type: 'error',
+                  });
+                  return;
+                } else {
+                  alertMessage({
+                    message: errorData.message,
+                    type: 'error',
+                  });
+                  return;
+                }
+              }
               alertMessage({ message: 'Failed to save flow', type: 'error' });
             }
           }}

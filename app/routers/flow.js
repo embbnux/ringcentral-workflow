@@ -5,6 +5,7 @@ const { Flow } = require('../models/Flow');
 const { Webhook } = require('../models/Webhook');
 const { TRIGGERS } = require('../flow/triggers');
 const { checkAndRefreshUserToken } = require('../lib/checkAndRefreshUserToken');
+const { validateFlow, checkFlowIsCompleted } = require('../flow/validateFlow');
 
 async function getFlows(req, res) {
   try {
@@ -29,7 +30,31 @@ async function getFlows(req, res) {
 
 async function createFlow(req, res) {
   try {
-    // TODO: validate nodes
+    const validateResult = validateFlow({
+      nodes: req.body.nodes,
+    });
+    if (validateResult.errors.length > 0) {
+      res.status(400);
+      res.json({
+        result: 'error',
+        message: 'Flow validation failed',
+        errors: validateResult.errors,
+      });
+      return;
+    }
+    const allFlows = await Flow.findAll({
+      where: {
+        userId: req.currentUser.id,
+      }
+    });
+    if (allFlows.length > 10) {
+      res.status(400);
+      res.json({
+        result: 'error',
+        message: 'Every user can only create no more than 10 flows now.',
+      });
+      return;
+    }
     const flow = await Flow.create({
       id: nanoid(15),
       name: req.body.name,
@@ -70,7 +95,18 @@ async function updateFlow(req, res) {
       res.json({ result: 'error', message: 'Cannot update an enabled flow' });
       return;
     }
-    // TODO: validate nodes
+    const validateResult = validateFlow({
+      nodes: req.body.nodes,
+    });
+    if (validateResult.errors.length > 0) {
+      res.status(400);
+      res.json({
+        result: 'error',
+        message: 'Flow validation failed',
+        errors: validateResult.errors,
+      });
+      return;
+    }
     flow.nodes = req.body.nodes;
     await flow.save();
     res.status(200);
@@ -118,8 +154,14 @@ async function toggleFlow(req, res) {
       return;
     }
     const flow = req.currentFlow;
-    // TODO: validate nodes
-    // TODO: setup trigger to enable flow
+    if (req.body.enabled) {
+      const isComplete = await checkFlowIsCompleted({ nodes: flow.nodes });
+      if (!isComplete) {
+        res.status(400);
+        res.json({ result: 'error', message: 'Flow is not complete.' });
+        return;
+      }
+    }
     flow.enabled = req.body.enabled;
     await flow.save();
     const enabledFlows = await Flow.findAll({
