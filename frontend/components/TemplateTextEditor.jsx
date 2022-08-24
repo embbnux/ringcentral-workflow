@@ -121,7 +121,7 @@ function getDeltaFromText(text, suggestions) {
 }
 
 export function TemplateTextEditor({
-  value,
+  value = '',
   setValue,
   suggestions,
 }) {

@@ -14,18 +14,25 @@ module.exports = {
       limitLength: 500,
     },
     {
-      id: 'toPhoneNumber',
-      name: 'To Phone Number',
-      type: 'string',
-      validator: '^\+?[1-9]\d{1,14}$',
-    },
-    {
       id: 'fromPhoneNumber',
       name: ' From Phone Number',
       type: 'option',
       options: [],
       remote: true,
       remoteOptionKey: 'fromPhoneNumbers',
+    },
+    {
+      id: 'toPhoneNumbers',
+      name: 'To Phone Number List',
+      type: 'array',
+      itemType: 'object',
+      itemProperties: [{
+        id: 'phoneNumber',
+        name: 'Phone Number',
+        type: 'string',
+        validator: '^\+?[1-9]\d{1,14}$',
+      }],
+      limitLength: 10,
     },
   ],
   returnData: [
@@ -75,9 +82,7 @@ module.exports = {
           from: {
             phoneNumber: params.fromPhoneNumber,
           },
-          to: [{
-            phoneNumber: params.toPhoneNumber,
-          }],
+          to: params.toPhoneNumbers,
         },
       }, user.token);
       return {

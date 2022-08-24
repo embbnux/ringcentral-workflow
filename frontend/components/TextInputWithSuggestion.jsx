@@ -24,14 +24,18 @@ export function TextInputWithSuggestion({
       setInputValue(value);
       return;
     }
+    const options = suggestions.map((item) => ({
+      id: item.id,
+      label: item.name,
+    }));
     const id = value.replace('{', '').replace('}', '');
-    const item = suggestions.find(s => s.id === id);
+    const item = options.find(s => s.id === id);
     if (item) {
       setDownshiftValue([item]);
     } else {
       setInputValue(value);
     }
-  }, [value]);
+  }, [value, suggestions]);
 
   return (
     <StyledDownshift
