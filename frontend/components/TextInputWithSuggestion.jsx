@@ -43,6 +43,7 @@ export function TextInputWithSuggestion({
         id: item.id,
         label: item.name,
       }))}
+      toggleButton={suggestions.length > 0}
       value={downshiftValue}
       onChange={(newItems) => {
         setDownshiftValue(newItems);
