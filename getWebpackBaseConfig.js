@@ -17,6 +17,10 @@ module.exports = function getBaseConfig() {
           ],
           exclude: /node_modules/,
         },
+        {
+          test: /\.css$/i,
+          use: ['style-loader', 'css-loader'],
+        },
       ],
     },
     plugins: [],

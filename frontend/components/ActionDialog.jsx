@@ -54,7 +54,7 @@ export function ActionDialog({
   const [parentNodeBranch, setParentNodeBranch] = useState('default');
   const [type, setType] = useState('');
   const [paramValues, setParamValues] = useState({});
-  const [remoteParmaOptions, setRemoteParmaOptions] = useState({});
+  const [remoteParamOptions, setRemoteParmaOptions] = useState({});
 
   useEffect(() => {
     if (!editingActionNodeId || !open) {
@@ -95,6 +95,10 @@ export function ActionDialog({
   }, [type]);
 
   const action = actions.find(action => action.id === type);
+
+  if (!open) {
+    return null;
+  }
 
   return (
     <RcDialog
@@ -146,7 +150,7 @@ export function ActionDialog({
             values={paramValues}
             setValues={setParamValues}
             inputProperties={inputProperties}
-            remoteOptions={remoteParmaOptions}
+            remoteOptions={remoteParamOptions}
           />
         </RcLoading>
       </RcDialogContent>

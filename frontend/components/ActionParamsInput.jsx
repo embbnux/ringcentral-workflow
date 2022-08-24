@@ -10,6 +10,7 @@ import {
 } from '@ringcentral/juno';
 import { Add, Delete } from '@ringcentral/juno-icon';
 import { TextInputWithSuggestion } from './TextInputWithSuggestion';
+import { TemplateTextEditor } from './TemplateTextEditor';
 
 const InputLine = styled.div`
   display: flex;
@@ -56,7 +57,7 @@ function ParmaOptionSelect({
   }
   return (
     <Select
-      value={value}
+      value={(param.remote && options.length === 0) ? '' : value}
       onChange={onChange}
     >
       {
@@ -90,7 +91,15 @@ function NormalTypeParamInput({
         ) : null
       }
       {
-        (param.type === 'text' || param.type === 'json') ? (
+        (param.type === 'text') ? (
+          <TemplateTextEditor
+            value={value}
+            setValue={setValue}
+          />
+        ) : null
+      }
+      {
+        (param.type === 'json') ? (
           <ParamTextarea
             value={value}
             onChange={(e) => {

@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { styled, palette2 } from '@ringcentral/juno/foundation';
 import { RcDownshift } from '@ringcentral/juno';
 
 const templateInputRegExp = /^{[^}]+}$/;
+
+const StyledDownshift = styled(RcDownshift)`
+  .MuiChip-root {
+    background-color: ${palette2('interactive', 'b01')};
+  }
+`;
 
 export function TextInputWithSuggestion({
   value = '',
@@ -27,7 +34,7 @@ export function TextInputWithSuggestion({
   }, [value]);
 
   return (
-    <RcDownshift
+    <StyledDownshift
       options={suggestions}
       value={downshiftValue}
       onChange={(newItems) => {
