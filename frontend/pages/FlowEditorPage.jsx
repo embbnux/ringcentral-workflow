@@ -17,6 +17,7 @@ import { FlowEditor } from '../components/FlowEditor';
 import { TriggerDialog } from '../components/TriggerDialog';
 import { ConditionDialog } from '../components/ConditionDialog';
 import { ActionDialog } from '../components/ActionDialog';
+import { validateActionParams } from '../lib/validateActionParams';
 
 const Container = styled.div`
   width: 100%;
@@ -53,6 +54,19 @@ const EditorContainer = styled.div`
 const Button = styled(RcButton)`
   margin-left: 20px;
 `;
+
+const MessageRow = styled.div`
+  width: 100%;
+  text-align: left;
+`;
+
+function MultipleAlertMessages({ messages }) {
+  return (
+    <>
+      {messages.map((message, index) => (<MessageRow key={index}>{message}</MessageRow>))}
+    </>
+  );
+}
 
 function getNewNodesWithUpdatedNode(oldNodes, updateNodeId, updateNodeData) {
   return oldNodes.map((node) => {
@@ -341,13 +355,14 @@ export function FlowEditorPage({
               if (e.response) {
                 const errorData = await e.response.json();
                 if (errorData.errors) {
+                  const messages = errorData.errors.map((error) => {
+                    if (error.nodeName) {
+                      return `${error.nodeName}: ${error.message}`;
+                    }
+                    return error.message;
+                  });
                   alertMessage({
-                    message: errorData.errors.map((error) => {
-                      if (error.nodeName) {
-                        return `${error.nodeName}: ${error.message}`;
-                      }
-                      return error.message;
-                    }).join('\n'),
+                    message: (<MultipleAlertMessages messages={messages} />),
                     type: 'error',
                   });
                   return;
@@ -583,6 +598,22 @@ export function FlowEditorPage({
           paramValues,
         }) => {
           const action = actions.find(action => action.id === type);
+          const triggerSampleData = {};
+          currentTrigger.outputData.forEach((item) => {
+            triggerSampleData[item.id] = item.testData;
+          });
+          const validationErrors = validateActionParams({
+            action,
+            paramValues,
+            sampleInputs: triggerSampleData,
+          })
+          if (validationErrors.length > 0) {
+            alertMessage({
+              type: 'error',
+              message: (<MultipleAlertMessages messages={validationErrors.map(e => e.message)} />),
+            })
+            return;
+          }
           if (!editingActionNode) {
             const parentNode = flowNodes.find(node => node.id === parentNodeId);
             const newActionNodePosition = selectedBlankNode ?

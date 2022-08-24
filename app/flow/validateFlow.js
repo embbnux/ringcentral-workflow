@@ -176,7 +176,7 @@ function validateActionNode({
           if (typeof testItemParam !== 'string') {
             errors.push({
               nodeName: node.data.label,
-              message: `Action param ${param.name} is invalid array type.`,
+              message: `Action param ${param.name} is invalid.`,
             });
           }
         }
@@ -185,7 +185,7 @@ function validateActionNode({
             if (typeof testItemParam[itemProperty.id] !== itemProperty.type) {
               errors.push({
                 nodeName: node.data.label,
-                message: `Action param ${param.name} is invalid array type.`,
+                message: `Action param ${param.name} is invalid.`,
               });
             }
             if (itemProperty.validator) {
@@ -193,7 +193,7 @@ function validateActionNode({
               if (!reg.test(testItemParam[itemProperty.id])) {
                 errors.push({
                   nodeName: node.data.label,
-                  message: `Action param ${param.name} is invalid array type.`,
+                  message: `Action param ${param.name} is invalid.`,
                 });
               }
             }
