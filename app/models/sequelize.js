@@ -1,13 +1,11 @@
 const { Sequelize } = require('sequelize');
 
-let option;
+const option = {};
 if (process.env.DB_SSL_UNSAFE === 'true') {
-  option = {
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
+  option.dialectOptions = {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
     }
   };
 }
