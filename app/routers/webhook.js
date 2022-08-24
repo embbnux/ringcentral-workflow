@@ -3,6 +3,7 @@ const { User } = require('../models/user');
 const { Flow } = require('../models/flow');
 const { runFlow } = require('../flow/runFlow');
 const { TRIGGERS } = require('../flow/triggers');
+const { checkAndRefreshUserToken } = require('../lib/checkAndRefreshUserToken');
 
 function triggerFlows(user, event, flows) {
   for (const flow of flows) {
@@ -29,20 +30,22 @@ async function webhookTrigger(req, res) {
     res.end();
     return;
   }
-  console.log(req.body);
   const webhookId = req.params.id;
   try {
     const webhookRecord = await Webhook.findByPk(webhookId);
     if (webhookRecord) {
       const user = await User.findByPk(webhookRecord.userId);
       if (user) {
-        const flows = await Flow.findAll({
-          where: {
-            userId: user.id,
-            enabled: true,
-          },
-        });
-        triggerFlows(user, req.body, flows);
+        const authResult = await checkAndRefreshUserToken(user);
+        if (authResult) {
+          const flows = await Flow.findAll({
+            where: {
+              userId: user.id,
+              enabled: true,
+            },
+          });
+          triggerFlows(user, req.body, flows);
+        }
       }
     }
   } catch (e) {

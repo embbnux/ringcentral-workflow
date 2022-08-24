@@ -100,6 +100,12 @@ export function HelpPage() {
       <RcTypography variant="body1">
         You can't enable the workflow if there are blank nodes in the workflow. And least one action node should be added.
       </RcTypography>
+      <Question variant="body2">
+        7. Why my workflow is not working
+      </Question>
+      <RcTypography variant="body1">
+        Workflow will stop working if the workflow is inactive more than 7 days.
+      </RcTypography>
       <SubTitle variant="title2">
         # About RingCentral Labs
       </SubTitle>
