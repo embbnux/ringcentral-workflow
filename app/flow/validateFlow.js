@@ -4,19 +4,6 @@ const { ACTIONS } = require('./actions');
 const { TRIGGERS } = require('./triggers');
 const { formatParams } = require('../lib/formatParams');
 
-function isDate(date) {
-  return (new Date(date) !== "Invalid Date") && !isNaN(new Date(date));
-}
-
-function getValueType(value) {
-  if (typeof value === 'string') {
-    if (isDate(value)) {
-      return 'dateTime';
-    }
-  }
-  return typeof value
-}
-
 function validateConditionNode({
   node,
   errors,
@@ -40,6 +27,7 @@ function validateConditionNode({
   }
   const inputType = input.type;
   if (condition.supportTypes.indexOf(inputType) === -1) {
+    console.log('inputType', inputType, condition.supportTypes);
     errors.push({
       nodeName: node.data.label,
       message: `Condition rule not support ${inputType} type.`,
@@ -47,7 +35,7 @@ function validateConditionNode({
     return;
   }
   const value = node.data.rule.value;
-  if (condition.valueType && condition.valueType !== getValueType(value)) {
+  if (condition.valueType && condition.valueType !== 'dateTime' && condition.valueType !== typeof value) {
     errors.push({
       nodeName: node.data.label,
       message: `Condition rule not support ${inputType} type.`,
