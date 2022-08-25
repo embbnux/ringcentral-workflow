@@ -10,6 +10,8 @@ import {
   RcMenuItem,
   RcListItemText,
   RcTextField,
+  RcSwitch,
+  RcTooltip,
 } from '@ringcentral/juno';
 import { styled, palette2 } from '@ringcentral/juno/foundation';
 import { ChevronLeft, Add, Edit } from '@ringcentral/juno-icon';
@@ -68,6 +70,10 @@ function MultipleAlertMessages({ messages }) {
   );
 }
 
+const ToggleButton = styled(RcSwitch)`
+  margin-left: 20px;
+`;
+
 function getNewNodesWithUpdatedNode(oldNodes, updateNodeId, updateNodeData) {
   return oldNodes.map((node) => {
     if (node.id !== updateNodeId) {
@@ -94,6 +100,7 @@ export function FlowEditorPage({
   const [addButtonMenuOpen, setAddButtonMenuOpen] = useState(false);
   const { id: flowId } = useParams();
   const [flowName, setFlowName] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
   const [flowEnabled, setFlowEnabled] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [flowNodes, setFlowNodes] = useState([]);
@@ -116,6 +123,7 @@ export function FlowEditorPage({
       return draggedNode;
     });
     setFlowNodes(newNodes);
+    setIsSaved(false);
   }, [flowNodes]);
 
   const onAddNode = useCallback(({ blankNodeId, type }) => {
@@ -146,6 +154,7 @@ export function FlowEditorPage({
           setFlowName('Untitled Flow');
           setTriggerDialogOpen(true);
           setFlowEnabled(false);
+          setIsSaved(false);
         } else {
           const flow = await client.getFlow(flowId);
           setFlowName(flow.name);
@@ -162,6 +171,7 @@ export function FlowEditorPage({
             }
             return node;
           }));
+          setIsSaved(true);
         }
         setLoading(false);
       } catch (e) {
@@ -236,6 +246,7 @@ export function FlowEditorPage({
                 value={flowName}
                 onChange={(e) => {
                   setFlowName(e.target.value);
+                  setIsSaved(false);
                 }}
                 onBlur={() => {
                   if (!flowName) {
@@ -260,6 +271,31 @@ export function FlowEditorPage({
                   setIsEditingName(true);
                 }}
                 disabled={flowEnabled}
+              />
+            )
+          }
+          {
+            ((flowId !== 'new' && isSaved) || flowEnabled) && (
+              <ToggleButton
+                title={flowEnabled ? 'Disable the flow' : 'Enable the flow'}
+                checked={flowEnabled}
+                onChange={async (e, enabled) => {
+                  setLoading(true);
+                  try {
+                    const newFlow = await client.toggleFlow(flowId, enabled);
+                    setFlowEnabled(newFlow.enabled);
+                    setLoading(false);
+                  } catch (e) {
+                    console.error(e);
+                    setLoading(false);
+                    if (e.response) {
+                      const errorData = await e.response.json();
+                      alertMessage({ type: 'error', message: errorData.message });
+                      return;
+                    }
+                    alertMessage({ type: 'error', message: 'Failed to toggle flow' });
+                  }
+                }}
               />
             )
           }
@@ -321,7 +357,7 @@ export function FlowEditorPage({
           </RcMenuItem>
         </RcMenu>
         <Button
-          disabled={flowEnabled}
+          disabled={flowEnabled || isSaved}
           onClick={async () => {
             try {
               setLoading(true);
@@ -343,11 +379,13 @@ export function FlowEditorPage({
                 const flow = await client.createFlow(flowName, nodes);
                 setLoading(false);
                 alertMessage({ message: 'Flow saved successfully', type: 'success' });
+                setIsSaved(true);
                 navigate(`/app/flows/${flow.id}`);
                 return;
               }
               await client.updateFlow(flowId, flowName, nodes);
               setLoading(false);
+              setIsSaved(true);
               alertMessage({ message: 'Flow saved successfully', type: 'success' });
             } catch (e) {
               console.error(e);
@@ -421,6 +459,7 @@ export function FlowEditorPage({
             setFlowNodes([newTriggerNode, blankNode]);
             setSelectBlankNodeId(null);
             setTriggerDialogOpen(false);
+            setIsSaved(false);
             return;
           }
           const newNodes = getNewNodesWithUpdatedNode(
@@ -433,6 +472,7 @@ export function FlowEditorPage({
           );
           setFlowNodes(newNodes);
           setTriggerDialogOpen(false);
+          setIsSaved(false);
         }}
       />
       <ConditionDialog
@@ -527,6 +567,7 @@ export function FlowEditorPage({
             setFlowNodes(newNodeList);
             setConditionDialogOpen(false);
             setSelectBlankNodeId(null);
+            setIsSaved(false);
             return;
           }
           const newNodes = getNewNodesWithUpdatedNode(
@@ -541,6 +582,7 @@ export function FlowEditorPage({
           );
           setFlowNodes(newNodes);
           setConditionDialogOpen(false);
+          setIsSaved(false);
         }}
         onDelete={(nodeId) => {
           const node = flowNodes.find(node => node.id === nodeId);
@@ -578,6 +620,7 @@ export function FlowEditorPage({
           ]);
           setConditionDialogOpen(false);
           setEditingActionNodeId(null);
+          setIsSaved(false);
         }}
       />
       <ActionDialog
@@ -650,6 +693,7 @@ export function FlowEditorPage({
             ]);
             setActionDialogOpen(false);
             setSelectBlankNodeId(null);
+            setIsSaved(false);
             return;
           }
           const newNodes = getNewNodesWithUpdatedNode(
@@ -663,6 +707,7 @@ export function FlowEditorPage({
           );
           setFlowNodes(newNodes);
           setActionDialogOpen(false);
+          setIsSaved(false);
         }}
         onDelete={(nodeId) => {
           const node = flowNodes.find(node => node.id === nodeId);
@@ -696,6 +741,7 @@ export function FlowEditorPage({
           ]);
           setActionDialogOpen(false);
           setEditingActionNodeId(null);
+          setIsSaved(false);
         }}
         onLoadParamsOptions={async (type) => {
           try {
