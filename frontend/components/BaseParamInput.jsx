@@ -71,6 +71,13 @@ export function BaseParamInput({
   showDelete,
   onDelete,
 }) {
+  let validatedSuggestions = suggestions;
+  if (param.validator) {
+    const validatorReg = new RegExp(param.validator);
+    validatedSuggestions = suggestions.filter((suggestion) => {
+      return validatorReg.test(suggestion.testData);
+    });
+  }
   return (
     <ParamInputLine>
       <ParamLabel color="neutral.f06" variant="body1">{param.name}</ParamLabel>
@@ -79,7 +86,7 @@ export function BaseParamInput({
           <TextInputWithSuggestion
             value={value}
             setValue={setValue}
-            suggestions={suggestions}
+            suggestions={validatedSuggestions}
           />
         ) : null
       }
@@ -88,7 +95,7 @@ export function BaseParamInput({
           <TemplateTextEditor
             value={value}
             setValue={setValue}
-            suggestions={suggestions}
+            suggestions={validatedSuggestions}
           />
         ) : null
       }

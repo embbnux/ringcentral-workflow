@@ -36,6 +36,10 @@ const KeyValueParamLine = styled(ParamInputLine)`
   align-items: center;
 `;
 
+const KeyValueTextInput = styled(TextInputWithSuggestion)`
+  max-width: 220px;
+`;
+
 function KeyValuePairInput({
   propertyKey,
   propertyValue,
@@ -61,7 +65,7 @@ function KeyValuePairInput({
         }}
       />
       <KeyValueParamLabel color="neutral.f06" variant="body1">{valueProperty.name}</KeyValueParamLabel>
-      <TextInputWithSuggestion
+      <KeyValueTextInput
         value={propertyValue}
         onChange={onPropertyValueChange}
         suggestions={suggestions}

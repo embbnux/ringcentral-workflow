@@ -23,6 +23,7 @@ function ParamInput({
         value={value}
         setValue={setValue}
         remoteOptions={remoteOptions}
+        suggestions={suggestions}
       />
     );
   }

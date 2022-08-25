@@ -8,7 +8,7 @@ module.exports = {
       id: 'fromNumber',
       name: 'New SMS: From Number',
       type: 'string',
-      testData: '+1234567890',
+      testData: '+12345678900',
     },
     {
       id: 'subject',

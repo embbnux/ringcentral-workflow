@@ -15,6 +15,7 @@ export function TextInputWithSuggestion({
   setValue,
   suggestions,
   placeholder,
+  className,
 }) {
   const [inputValue, setInputValue] = useState('');
   const [downshiftValue, setDownshiftValue] = useState([]);
@@ -39,6 +40,7 @@ export function TextInputWithSuggestion({
 
   return (
     <StyledDownshift
+      className={className}
       options={suggestions.map((item) => ({
         id: item.id,
         label: item.name,
