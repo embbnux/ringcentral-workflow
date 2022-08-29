@@ -4,7 +4,7 @@ const { checkAndRefreshUserToken } = require('../../lib/checkAndRefreshUserToken
 
 module.exports = {
   id: 'sendTeamMessage',
-  name: 'Send Team Message',
+  name: 'Send message',
   type: 'RC',
   params: [
     {

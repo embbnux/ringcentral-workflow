@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 
 module.exports = {
   id: 'webhook',
-  name: 'Send Webhook request',
+  name: 'Send HTTP request',
   type: 'External',
   params: [
     {
@@ -25,18 +25,18 @@ module.exports = {
     },
     {
       id: 'format',
-      name: 'Format',
+      name: 'Content-type',
       type: 'option',
       options: [{
         value: 'json',
-        name: 'JSON',
+        name: 'application/json',
       }, {
         value: 'form-url-encoded',
-        name: 'Form URL-Encoded',
+        name: 'application/x-www-form-urlencoded',
       },
       {
         value: 'text',
-        name: 'Plain Text',
+        name: 'text/plain',
       }],
     },
     {
@@ -77,7 +77,7 @@ module.exports = {
     try {
       const headers = {
         'Accept': 'application/json',
-        'Content-Type': contentTypeMap[params.format],
+        'Content-Type': contentTypeMap[params.format] || contentTypeMap.json,
         ...params.headers,
       };
       const response = await fetch(
