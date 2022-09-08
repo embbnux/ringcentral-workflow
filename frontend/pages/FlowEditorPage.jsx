@@ -118,7 +118,6 @@ export function FlowEditorPage({
 
   useEffect(() => {
     flowNodesRef.current = flowNodes;
-    console.log(flowNodes);
   }, [flowNodes]);
 
   const onDragNode = useCallback((e, draggedNode) => {
