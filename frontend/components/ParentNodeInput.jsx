@@ -20,7 +20,7 @@ function ParentNodeBranchInput({
   onChange,
   parentNode,
 }) {
-  if (!parentNode || parentNode.type !== 'condition' || !parentNode.data.enableFalsy) {
+  if (!parentNode || parentNode.type !== 'condition') {
     return null;
   }
   return (

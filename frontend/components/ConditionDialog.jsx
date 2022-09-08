@@ -153,7 +153,6 @@ export function ConditionDialog({
   const [parentNodeId, setParentNodeId] = useState('');
   const [parentNodeBranch, setParentNodeBranch] = useState('default');
   const [nodeLabel, setNodeLabel] = useState('');
-  const [enableFalsy, setEnableFalsy] = useState(false);
   const [rule, setRule] = useState({
     input: '',
     condition: '',
@@ -169,7 +168,6 @@ export function ConditionDialog({
         setParentNodeId('');
       }
       setNodeLabel('');
-      setEnableFalsy(false);
       const defaultProperty = inputProperties[0];
       let defaultCondition;
       if (defaultProperty) {
@@ -188,7 +186,6 @@ export function ConditionDialog({
     setParentNodeId(editingConditionNode.data.parentNodeId);
     setNodeLabel(editingConditionNode.data.label);
     setRule(editingConditionNode.data.rule);
-    setEnableFalsy(editingConditionNode.data.enableFalsy);
   }, [editingConditionNode, open, selectedBlankNode]);
 
   const disableDeleteButton = (
@@ -240,17 +237,6 @@ export function ConditionDialog({
             setRule(newRule);
           }}
         />
-        <InputLine>
-          <RcSwitch
-            formControlLabelProps={{
-              labelPlacement: 'end',
-            }}
-            label="Enable falsy branch"
-            checked={enableFalsy}
-            onChange={(e, checked) => setEnableFalsy(checked)}
-            disabled={!!editingConditionNode}
-          />
-        </InputLine>
       </RcDialogContent>
       <RcDialogActions>
         {
@@ -272,7 +258,6 @@ export function ConditionDialog({
               parentNodeBranch,
               label: nodeLabel,
               rule,
-              enableFalsy,
               description: getConditionDescription(rule, inputProperties, conditions),
             });
           }}

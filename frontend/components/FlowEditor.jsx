@@ -1,21 +1,25 @@
 import React, { useCallback } from 'react';
 import ReactFlow, { Controls } from 'react-flow-renderer';
-import { TriggerNode, ConditionNode, ActionNode, BlankNode } from './FlowNode';
+import { TriggerNode, ConditionNode, ActionNode, BlankNode, ExitNode } from './FlowNode';
 
 const nodeTypes = {
   trigger: TriggerNode,
   condition: ConditionNode,
   action: ActionNode,
   blank: BlankNode,
+  exit: ExitNode,
 };
 
 function getEdgesFromNodes(nodes) {
   const edges = [];
   nodes.forEach((node) => {
-    if (node.type == 'blank') {
+    if (node.type === 'blank') {
       return;
     }
-    if (node.type === 'condition' && node.data.enableFalsy) {
+    if (node.type === 'exit') {
+      return;
+    }
+    if (node.type === 'condition') {
       if (node.data.nextNodes && node.data.nextNodes.length > 0) {
         node.data.nextNodes.forEach((nextNodeId) => {
           edges.push({

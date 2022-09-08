@@ -104,6 +104,7 @@ export function FlowEditorPage({
   const [flowEnabled, setFlowEnabled] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [flowNodes, setFlowNodes] = useState([]);
+  const flowNodesRef = useRef(flowNodes);
   const [triggerDialogOpen, setTriggerDialogOpen] = useState(false);
   const [triggers, setTriggers] = useState([]);
   const [editingTriggerNodeId, setEditingTriggerNodeId] = useState(null);
@@ -115,8 +116,14 @@ export function FlowEditorPage({
   const [actions, setActions] = useState([]);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
 
+  useEffect(() => {
+    flowNodesRef.current = flowNodes;
+    console.log(flowNodes);
+  }, [flowNodes]);
+
   const onDragNode = useCallback((e, draggedNode) => {
-    const newNodes = flowNodes.map((node) => {
+    const oldFlowNodes = flowNodesRef.current;
+    const newNodes = oldFlowNodes.map((node) => {
       if (node.id !== draggedNode.id) {
         return node;
       }
@@ -124,7 +131,84 @@ export function FlowEditorPage({
     });
     setFlowNodes(newNodes);
     setIsSaved(false);
-  }, [flowNodes]);
+  }, []);
+
+  const onAddExitNode = useCallback(({ blankNodeId }) => {
+    const oldFlowNodes = flowNodesRef.current;
+    const blankNode = oldFlowNodes.find((node) => node.id === blankNodeId);
+    const parentNode = oldFlowNodes.find((node) => node.id === blankNode.data.parentNodeId);
+    const newExitNode = {
+      id: `exit-${Date.now()}`,
+      type: 'exit',
+      data: {
+        parentNodeId: blankNode.data.parentNodeId,
+        parentNodeBranch: blankNode.data.parentNodeBranch,
+      },
+      position: blankNode.position,
+    };
+    const parentNextNodesKey = blankNode.data.parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
+    const newNodes = getNewNodesWithUpdatedNode(
+      oldFlowNodes,
+      parentNode.id,
+      {
+        [parentNextNodesKey]: [
+          ...parentNode.data[parentNextNodesKey].filter((id) => id !== blankNodeId),
+          newExitNode.id,
+        ],
+      }
+    );
+    setFlowNodes(
+      newNodes.filter((node) => node.id !== blankNodeId).concat(newExitNode)
+    );
+  }, []);
+
+  const onDeleteNode = useCallback((nodeId) => {
+    const oldFlowNodes = flowNodesRef.current;
+    const currentNode = oldFlowNodes.find((node) => node.id === nodeId);
+    const parentNode = oldFlowNodes.find((n) => n.id === currentNode.data.parentNodeId);
+    const parentNextNodesKey = currentNode.data.parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
+    let newBlankNode;
+    const oldParentNodeNextNodes = parentNode.data[parentNextNodesKey];
+    if (oldParentNodeNextNodes.length === 1) {
+      newBlankNode = {
+        id: `blank-${Date.now()}`,
+        type: 'blank',
+        data: {
+          parentNodeId: parentNode.id,
+          parentNodeBranch: currentNode.data.parentNodeBranch,
+          onAddNode,
+        },
+        position: currentNode.position,
+      };
+    }
+    const newParentNodeNextNodes = oldParentNodeNextNodes.filter((id) => id !== nodeId);
+    if (newBlankNode) {
+      newParentNodeNextNodes.push(newBlankNode.id);
+    }
+    let newNodes = getNewNodesWithUpdatedNode(
+      oldFlowNodes,
+      parentNode.id,
+      {
+        [parentNextNodesKey]: newParentNodeNextNodes,
+      }
+    );
+    newNodes = newNodes.filter((n) => {
+      if (n.id === currentNode.id) {
+        return false;
+      }
+      if (currentNode.type === 'condition') {
+        return (
+          currentNode.data.nextNodes.indexOf(n.id) === -1 &&
+          currentNode.data.falsyNodes.indexOf(n.id) === -1
+        )
+      }
+      return true;
+    });
+    if (newBlankNode) {
+      newNodes.push(newBlankNode);
+    }
+    setFlowNodes(newNodes);
+  }, []);
 
   const onAddNode = useCallback(({ blankNodeId, type }) => {
     setSelectBlankNodeId(blankNodeId);
@@ -134,6 +218,8 @@ export function FlowEditorPage({
     } else if (type === 'condition') {
       setEditingConditionNodeId(null);
       setConditionDialogOpen(true);
+    } else if (type === 'exit') {
+      onAddExitNode({ blankNodeId });
     }
   }, []);
 
@@ -204,7 +290,9 @@ export function FlowEditorPage({
     if (
       node.type === 'trigger' &&
       node.data.nextNodes &&
-      node.data.nextNodes.filter(id => id.indexOf('blank-') === -1).length > 0
+      node.data.nextNodes.filter(
+        id => id.indexOf('blank-') === -1 && id.indexOf('exit-') === -1
+      ).length > 0
     ) {
       alertMessage({
         message: 'Cannot edit a node with following nodes.',
@@ -222,6 +310,8 @@ export function FlowEditorPage({
     } else if (node.type === 'action') {
       setEditingActionNodeId(node.id);
       setActionDialogOpen(true);
+    } else if (node.type === 'exit') {
+      onDeleteNode(node.id);
     }
   }, []);
 
@@ -354,6 +444,17 @@ export function FlowEditorPage({
             }}
           >
             <RcListItemText primary="Add action" />
+          </RcMenuItem>
+          <RcMenuItem
+            disabled={flowNodes.length < 2}
+            onClick={() => {
+              setSelectBlankNodeId(null);
+              setEditingActionNodeId(null);
+              setActionDialogOpen(true);
+              setAddButtonMenuOpen(false);
+            }}
+          >
+            <RcListItemText primary="Add exit" />
           </RcMenuItem>
         </RcMenu>
         <Button
@@ -490,7 +591,6 @@ export function FlowEditorPage({
           parentNodeBranch,
           label,
           rule,
-          enableFalsy,
           description,
         }) => {
           if (!editingConditionNode) {
@@ -508,7 +608,6 @@ export function FlowEditorPage({
                 nextNodes: [],
                 falsyNodes: [],
                 rule,
-                enableFalsy,
                 description,
               },
               position: newConditionNodePosition,
@@ -522,28 +621,25 @@ export function FlowEditorPage({
                 onAddNode,
               },
               position: {
-                x: enableFalsy ? newConditionNode.position.x - 120 : newConditionNode.position.x,
+                x: newConditionNode.position.x - 120,
                 y: newConditionNode.position.y + 150,
               },
             };
             newConditionNode.data.nextNodes.push(blankTrueNode.id);
-            let blankFalseNode;
-            if (enableFalsy) {
-              blankFalseNode = {
-                id: `blank-false-${Date.now()}`,
-                type: 'blank',
-                data: {
-                  parentNodeId: newConditionNode.id,
-                  parentNodeBranch: 'false',
-                  onAddNode,
-                },
-                position: {
-                  x: newConditionNode.position.x + 250,
-                  y: newConditionNode.position.y + 150,
-                },
-              };
-              newConditionNode.data.falsyNodes.push(blankFalseNode.id);
-            }
+            const blankFalseNode = {
+              id: `blank-false-${Date.now()}`,
+              type: 'blank',
+              data: {
+                parentNodeId: newConditionNode.id,
+                parentNodeBranch: 'false',
+                onAddNode,
+              },
+              position: {
+                x: newConditionNode.position.x + 250,
+                y: newConditionNode.position.y + 150,
+              },
+            };
+            newConditionNode.data.falsyNodes.push(blankFalseNode.id);
             const parentNextNodesKey = parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
             const blankNodeIdOfParentNode = parentNode.data[parentNextNodesKey].find((nodeId) => nodeId.indexOf('blank-') === 0);
             const oldNodes = getNewNodesWithUpdatedNode(
@@ -577,7 +673,6 @@ export function FlowEditorPage({
               label,
               rule,
               description,
-              enableFalsy,
             }
           );
           setFlowNodes(newNodes);
@@ -585,39 +680,7 @@ export function FlowEditorPage({
           setIsSaved(false);
         }}
         onDelete={(nodeId) => {
-          const node = flowNodes.find(node => node.id === nodeId);
-          const parentNode = flowNodes.find(flowNode => flowNode.id === node.data.parentNodeId);
-          const blankNode = {
-            id: `blank-${Date.now()}`,
-            type: 'blank',
-            data: {
-              parentNodeId: node.data.parentNodeId,
-              parentNodeBranch: node.data.parentNodeBranch,
-              onAddNode,
-            },
-            position: node.position,
-          };
-          const parentNextNodesKey = node.data.parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
-          const oldNodes = getNewNodesWithUpdatedNode(
-            flowNodes,
-            parentNode.id,
-            {
-              [parentNextNodesKey]: [
-                ...parentNode.data[parentNextNodesKey].filter((id) => id !== nodeId),
-                blankNode.id,
-              ],
-            }
-          );
-          setFlowNodes([
-            ...oldNodes.filter((n) => {
-              return (
-                n.id !== nodeId &&
-                node.data.nextNodes.indexOf(n.id) === -1 &&
-                node.data.falsyNodes.indexOf(n.id) === -1
-              );
-            }),
-            blankNode,
-          ]);
+          onDeleteNode(nodeId);
           setConditionDialogOpen(false);
           setEditingActionNodeId(null);
           setIsSaved(false);
@@ -710,35 +773,7 @@ export function FlowEditorPage({
           setIsSaved(false);
         }}
         onDelete={(nodeId) => {
-          const node = flowNodes.find(node => node.id === nodeId);
-          const parentNode = flowNodes.find(flowNode => flowNode.id === node.data.parentNodeId);
-          const blankNode = {
-            id: `blank-${Date.now()}`,
-            type: 'blank',
-            data: {
-              parentNodeId: node.data.parentNodeId,
-              parentNodeBranch: node.data.parentNodeBranch,
-              onAddNode,
-            },
-            position: node.position,
-          };
-          const parentNextNodesKey = node.data.parentNodeBranch === 'false' ?
-            'falsyNodes' :
-            'nextNodes';
-          const oldNodes = getNewNodesWithUpdatedNode(
-            flowNodes,
-            parentNode.id,
-            {
-              [parentNextNodesKey]: [
-                ...parentNode.data[parentNextNodesKey].filter((id) => id !== nodeId),
-                blankNode.id,
-              ],
-            }
-          );
-          setFlowNodes([
-            ...oldNodes.filter(n => n.id !== nodeId),
-            blankNode,
-          ]);
+          onDeleteNode(nodeId);
           setActionDialogOpen(false);
           setEditingActionNodeId(null);
           setIsSaved(false);

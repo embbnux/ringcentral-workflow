@@ -12,14 +12,14 @@ import {
   useTheme,
   shadows,
 } from '@ringcentral/juno/foundation';
-import { Edit, AddBorder } from '@ringcentral/juno-icon';
+import { Edit, AddBorder, Delete } from '@ringcentral/juno-icon';
 import { Handle } from 'react-flow-renderer';
 
 const IconButton = styled(RcIconButton)`
   position: absolute;
   right: 0;
   top: 50%;
-  margin-top: -16px;
+  margin-top: -14px;
   display: none;
 `;
 
@@ -148,8 +148,60 @@ export const BlankNode = (({ isConnectable, data, id }) => {
           >
             <RcListItemText primary="Add action" />
           </RcMenuItem>
+          <RcMenuItem
+            onClick={() => {
+              setAddButtonMenuOpen(false);
+              data.onAddNode && data.onAddNode({
+                blankNodeId: id,
+                type: 'exit',
+              });
+            }}
+          >
+            <RcListItemText primary="Add exit" />
+          </RcMenuItem>
         </RcMenu>
       </BlankNodeWrapper>
+      <Handle
+        type="target"
+        position="top"
+        id="end"
+        style={{ top: -5, background: theme.palette.neutral.f03 }}
+        isConnectable={isConnectable}
+      />
+    </>
+  );
+});
+
+const ExitNodeWrapper = styled(TriggerNodeWrapper)`
+  min-width: 30px;
+`;
+
+export const ExitNode = (({ isConnectable }) => {
+  const theme = useTheme();
+  const buttonRef = useRef(null);
+
+  return (
+    <>
+      <ExitNodeWrapper>
+        <StyledText color="neutral.b01">Exit</StyledText>
+        <IconButton
+          symbol={Delete}
+          color="neutral.b01"
+          size="small"
+          onClick={() => {
+            if (!buttonRef.current) {
+              return;
+            }
+            const doubleClickEvent = new MouseEvent('dblclick', {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+            });
+            buttonRef.current.dispatchEvent(doubleClickEvent);
+          }}
+          innerRef={buttonRef}
+        />
+      </ExitNodeWrapper>
       <Handle
         type="target"
         position="top"
@@ -224,30 +276,28 @@ export const ConditionNode = (({ data, isConnectable }) => {
       <Handle
         type="source"
         position="bottom"
-        id={data.enableFalsy ? 'true' : undefined}
+        id="true"
         style={{
           top: 62,
-          left: data.enableFalsy ? 20 : '50%',
+          left: 20,
           right: 'auto',
           background: theme.palette.neutral.f03
         }}
         isConnectable={isConnectable}
       />
       {
-        data.enableFalsy && (
-          <Handle
-            type="source"
-            position="bottom"
-            id="false"
-            style={{
-              top: 62,
-              left: 'auto',
-              right: 20,
-              background: '#555'
-            }}
-            isConnectable={isConnectable}
-          />
-        )
+        <Handle
+          type="source"
+          position="bottom"
+          id="false"
+          style={{
+            top: 62,
+            left: 'auto',
+            right: 20,
+            background: '#555'
+          }}
+          isConnectable={isConnectable}
+        />
       }
     </>
   );
