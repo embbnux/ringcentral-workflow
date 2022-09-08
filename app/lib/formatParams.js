@@ -1,4 +1,4 @@
-const stringTemplate = require('string-template');
+const stringTemplate = require('./string-template');
 
 function formatParams(params, inputs) {
   const formattedParams = {};

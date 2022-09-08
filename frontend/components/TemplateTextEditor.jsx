@@ -104,8 +104,8 @@ function getDeltaFromText(text, suggestions) {
     } else {
       const mentionObject = {
         id: mentionId,
-        value: mentionItem.name,
-        denotationChar: '#',
+        value: `{${mentionItem.id}}`,
+        denotationChar: '{',
         index: `${mentionIndex}`,
       };
       delta.ops.push({ insert: { mention: mentionObject }});
@@ -136,6 +136,7 @@ export function TemplateTextEditor({
     mention: {
       allowedChars: /^[a-zA-Z0-9_\s]*$/,
       mentionDenotationChars: ["#", "{"],
+      showDenotationChar: false,
       source: function(searchTerm, renderList) {
         const options = suggestionsRef.current.map((item) => ({
           id: item.id,
@@ -149,7 +150,13 @@ export function TemplateTextEditor({
           });
           renderList(matches, searchTerm);
         }
-      }
+      },
+      onSelect: function (item, insertItem) {
+        insertItem({
+          id: item.id,
+          value: `{${item.id}}`,
+        }, true);
+      },
     }
   }), []);
 
