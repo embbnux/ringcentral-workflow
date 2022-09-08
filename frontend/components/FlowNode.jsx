@@ -172,8 +172,31 @@ export const BlankNode = (({ isConnectable, data, id }) => {
   );
 });
 
-const ExitNodeWrapper = styled(TriggerNodeWrapper)`
-  min-width: 30px;
+const ExitNodeWrapper = styled(BlankNodeWrapper)`
+  min-width: 60px;
+  min-height: 34px;
+  background: ${palette2('label', 'blue01')};
+  border: 1px solid ${palette2('label', 'blue01')};
+
+  &:hover {
+    .MuiTypography-root {
+      display: none;
+    }
+
+    .RcIconButton-root {
+      display: block;
+    }
+  }
+`;
+
+const ExitNodeText = styled(RcTypography)`
+  height: 32px;
+  line-height: 32px;
+`;
+
+const ExitDeleteButton = styled(IconButton)`
+  right: 50%;
+  margin-right: -16px;
 `;
 
 export const ExitNode = (({ isConnectable }) => {
@@ -183,8 +206,8 @@ export const ExitNode = (({ isConnectable }) => {
   return (
     <>
       <ExitNodeWrapper>
-        <StyledText color="neutral.b01">Exit</StyledText>
-        <IconButton
+        <ExitNodeText color="neutral.b01">Exit</ExitNodeText>
+        <ExitDeleteButton
           symbol={Delete}
           color="neutral.b01"
           size="small"
@@ -279,8 +302,6 @@ export const ConditionNode = (({ data, isConnectable }) => {
         id="true"
         style={{
           top: 62,
-          left: 20,
-          right: 'auto',
           background: theme.palette.neutral.f03
         }}
         isConnectable={isConnectable}
@@ -288,12 +309,12 @@ export const ConditionNode = (({ data, isConnectable }) => {
       {
         <Handle
           type="source"
-          position="bottom"
+          position="right"
           id="false"
           style={{
-            top: 62,
+            top: 32,
             left: 'auto',
-            right: 20,
+            right: -4,
             background: '#555'
           }}
           isConnectable={isConnectable}
