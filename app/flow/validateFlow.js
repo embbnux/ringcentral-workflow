@@ -41,10 +41,10 @@ function validateConditionNode({
       message: `Condition rule not support ${inputType} type.`,
     });
   }
-  if (!node.data.enableFalsy && node.data.falsyNodes && node.data.falsyNodes.length > 0) {
+  if (node.data.falsyNodes.length === 0) {
     errors.push({
       nodeName: node.data.label,
-      message: 'Falsy nodes must be removed.',
+      message: 'Condition node must have falsy nodes, add exit node if you don\'t want to do anything.',
     });
   }
 }
@@ -242,25 +242,23 @@ function validateNode({ nodes, node, errors, deep, triggerOutput, triggerSampleD
         triggerSampleData,
       });
     }
-    if (node.data.enableFalsy) {
-      if (!Array.isArray(node.data.falsyNodes)) {
-        errors.push({
-          nodeName: node.data.label,
-          message: 'Condition node must have next falsy nodes',
-        });
-        return;
-      }
-      for (const nextNodeId of node.data.falsyNodes) {
-        const nextNode = nodes.find((node) => node.id === nextNodeId);
-        validateNode({
-          node: nextNode,
-          errors,
-          deep: deep + 1,
-          nodes,
-          triggerOutput,
-          triggerSampleData,
-        });
-      }
+    if (!Array.isArray(node.data.falsyNodes)) {
+      errors.push({
+        nodeName: node.data.label,
+        message: 'Condition node must have next falsy nodes',
+      });
+      return;
+    }
+    for (const nextNodeId of node.data.falsyNodes) {
+      const nextNode = nodes.find((node) => node.id === nextNodeId);
+      validateNode({
+        node: nextNode,
+        errors,
+        deep: deep + 1,
+        nodes,
+        triggerOutput,
+        triggerSampleData,
+      });
     }
   }
   if (node.type === 'action') {
@@ -325,6 +323,9 @@ function checkBlankAndActionNode({
     blankNodes.push(node);
     return;
   }
+  if (node.type === 'exit') {
+    return;
+  }
   for (const nextNodeId of node.data.nextNodes) {
     const nextNode = nodes.find((node) => node.id === nextNodeId);
     checkBlankAndActionNode({
@@ -334,7 +335,7 @@ function checkBlankAndActionNode({
       actionNodes,
     });
   }
-  if (node.type === 'conditon' && node.data.enableFalsy) {
+  if (node.type === 'condition') {
     for (const nextNodeId of node.data.falsyNodes) {
       const nextNode = nodes.find((node) => node.id === nextNodeId);
       checkBlankAndActionNode({

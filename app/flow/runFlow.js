@@ -52,7 +52,7 @@ async function runNode({
           nodes,
         });
       }
-    } else if (node.data.enableFalsy) {
+    } else {
       for (const nextNodeId of node.data.falsyNodes) {
         const nextNode = nodes.find((node) => node.id === nextNodeId);
         await runNode({
