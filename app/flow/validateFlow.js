@@ -231,6 +231,13 @@ function validateNode({ nodes, node, errors, deep, triggerOutput, triggerSampleD
       });
       return;
     }
+    if (node.data.nextNodes.length > 5) {
+      errors.push({
+        nodeName: node.data.label,
+        message: 'Condition node next nodes must be less than 5',
+      });
+      return;
+    }
     for (const nextNodeId of node.data.nextNodes) {
       const nextNode = nodes.find((node) => node.id === nextNodeId);
       validateNode({
@@ -246,6 +253,13 @@ function validateNode({ nodes, node, errors, deep, triggerOutput, triggerSampleD
       errors.push({
         nodeName: node.data.label,
         message: 'Condition node must have next falsy nodes',
+      });
+      return;
+    }
+    if (node.data.falsyNodes.length > 5) {
+      errors.push({
+        nodeName: node.data.label,
+        message: 'Condition node falsy nodes must be less than 5',
       });
       return;
     }
@@ -285,6 +299,21 @@ function validateFlow({
     error.push({
       message: 'Flow must have a trigger node',
     });
+    return errors;
+  }
+  if (!Array.isArray(triggerNode.data.nextNodes)) {
+    errors.push({
+      nodeName: triggerNode.data.label,
+      message: 'Trigger node must have next nodes',
+    });
+    return errors;
+  }
+  if (triggerNode.data.nextNodes.length > 5) {
+    errors.push({
+      nodeName: triggerNode.data.label,
+      message: 'Trigger node must have less than 5 next nodes',
+    });
+    return errors;
   }
   const trigger = TRIGGERS.find(t => t.id === triggerNode.data.type);
   const triggerOutput = trigger.outputData;
