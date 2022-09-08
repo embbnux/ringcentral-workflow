@@ -19,6 +19,7 @@ import { FlowEditor } from '../components/FlowEditor';
 import { TriggerDialog } from '../components/TriggerDialog';
 import { ConditionDialog } from '../components/ConditionDialog';
 import { ActionDialog } from '../components/ActionDialog';
+import { ExitNodeDialog } from '../components/ExitNodeDialog';
 import { validateActionParams } from '../lib/validateActionParams';
 
 const Container = styled.div`
@@ -115,6 +116,7 @@ export function FlowEditorPage({
   const [conditions, setConditions] = useState([]);
   const [actions, setActions] = useState([]);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
+  const [exitNodeDialogOpen, setExitNodeDialogOpen] = useState(false);
 
   useEffect(() => {
     flowNodesRef.current = flowNodes;
@@ -132,32 +134,45 @@ export function FlowEditorPage({
     setIsSaved(false);
   }, []);
 
-  const onAddExitNode = useCallback(({ blankNodeId }) => {
+  const onAddExitNode = useCallback(({ blankNodeId, parentNodeId, parentNodeBranch }) => {
     const oldFlowNodes = flowNodesRef.current;
-    const blankNode = oldFlowNodes.find((node) => node.id === blankNodeId);
-    const parentNode = oldFlowNodes.find((node) => node.id === blankNode.data.parentNodeId);
+    let connectParentNodeId = parentNodeId;
+    let connectParentNodeBranch = parentNodeBranch;
+    let blankNode
+    if (blankNodeId) {
+      blankNode = oldFlowNodes.find((node) => node.id === blankNodeId);
+      connectParentNodeId = blankNode.data.parentNodeId;
+      connectParentNodeBranch = blankNode.data.parentNodeBranch;
+    }
+    const parentNode = oldFlowNodes.find((node) => node.id === connectParentNodeId);
+    const parentNextNodesKey = connectParentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
+    if (!blankNode) {
+      const parentBlankNodeId =  parentNode.data[parentNextNodesKey].find(
+        id => id.indexOf('blank') === 0
+      );
+      blankNode = oldFlowNodes.find((node) => node.id === parentBlankNodeId);
+    }
     const newExitNode = {
       id: `exit-${Date.now()}`,
       type: 'exit',
       data: {
-        parentNodeId: blankNode.data.parentNodeId,
-        parentNodeBranch: blankNode.data.parentNodeBranch,
+        parentNodeId: connectParentNodeId,
+        parentNodeBranch: connectParentNodeBranch,
       },
       position: blankNode.position,
     };
-    const parentNextNodesKey = blankNode.data.parentNodeBranch === 'false' ? 'falsyNodes' : 'nextNodes';
     const newNodes = getNewNodesWithUpdatedNode(
       oldFlowNodes,
-      parentNode.id,
+      connectParentNodeId,
       {
         [parentNextNodesKey]: [
-          ...parentNode.data[parentNextNodesKey].filter((id) => id !== blankNodeId),
+          ...parentNode.data[parentNextNodesKey].filter((id) => id !== blankNode.id),
           newExitNode.id,
         ],
       }
     );
     setFlowNodes(
-      newNodes.filter((node) => node.id !== blankNodeId).concat(newExitNode)
+      newNodes.filter((node) => node.id !== blankNode.id).concat(newExitNode)
     );
   }, []);
 
@@ -445,11 +460,11 @@ export function FlowEditorPage({
             <RcListItemText primary="Add action" />
           </RcMenuItem>
           <RcMenuItem
-            disabled={flowNodes.length < 2}
+            disabled={
+              flowNodes.filter(n => n.type === 'condition').length === 0
+            }
             onClick={() => {
-              setSelectBlankNodeId(null);
-              setEditingActionNodeId(null);
-              setActionDialogOpen(true);
+              setExitNodeDialogOpen(true);
               setAddButtonMenuOpen(false);
             }}
           >
@@ -793,6 +808,15 @@ export function FlowEditorPage({
             return {};
           }
         }}
+      />
+      <ExitNodeDialog
+        open={exitNodeDialogOpen}
+        onClose={() => setExitNodeDialogOpen(false)}
+        onSave={({ parentNodeId, parentNodeBranch }) => {
+          onAddExitNode({ parentNodeId, parentNodeBranch });
+          setExitNodeDialogOpen(false);
+        }}
+        allNodes={flowNodes}
       />
     </Container>
   );
