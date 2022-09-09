@@ -46,6 +46,10 @@ module.exports = {
   getParamsOptions: async ({ user }) => {
     const rcSDK = new RingCentral(RINGCENTRAL_OPTIONS);
     try {
+      const authResult = await checkAndRefreshUserToken(user);
+      if (!authResult) {
+        return {};
+      }
       const response = await rcSDK.request({
         path: '/restapi/v1.0/account/~/extension/~/phone-number',
         method: 'GET',
